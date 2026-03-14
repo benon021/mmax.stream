@@ -52,6 +52,7 @@ function MovieModal({ movie, onClose }) {
   const [forceLoaderOffset, setForceLoaderOffset] = useState(true);
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const [isServerOpen, setIsServerOpen] = useState(false);
   const overlayTimerRef = useRef(null);
 
   const containerRef = useRef(null);
@@ -204,20 +205,42 @@ function MovieModal({ movie, onClose }) {
                   onClick={showOverlayBriefly}
                 >
                   <div className="player-top-controls">
-                    <div className="server-switcher-premium">
-                      <select
-                        className="server-select-glass"
-                        value={currentSourceIndex}
-                        onChange={(e) => setCurrentSourceIndex(parseInt(e.target.value))}
+                    <div className={`server-switcher-liquid ${isServerOpen ? "is-open" : ""}`} onClick={(e) => e.stopPropagation()}>
+                      <button 
+                        className="server-trigger-main" 
+                        onClick={() => setIsServerOpen(!isServerOpen)}
+                        onMouseEnter={() => setIsOverlayVisible(true)}
                       >
-                        {SOURCES.map((src, idx) => (
-                          <option key={src.id} value={idx}>
-                            Server: {src.name}
-                          </option>
-                        ))}
-                      </select>
+                        <span className="trigger-icon">S</span>
+                        <span className="trigger-text">Server: {SOURCES[currentSourceIndex].name}</span>
+                        <svg className={`chevron-icon ${isServerOpen ? "rotated" : ""}`} viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                          <path d="M7 10l5 5 5-5z" />
+                        </svg>
+                      </button>
+                      
+                      {isServerOpen && (
+                        <div className="server-dropdown-liquid liquid-glass-premium">
+                          {SOURCES.map((src, idx) => (
+                            <div 
+                              key={src.id} 
+                              className={`server-option-liquid ${currentSourceIndex === idx ? "active" : ""}`}
+                              onClick={() => {
+                                setCurrentSourceIndex(idx);
+                                setIsServerOpen(false);
+                                setForceLoaderOffset(true);
+                              }}
+                            >
+                              <div className="option-indicator" />
+                              <div className="option-info">
+                                <span className="option-name">{src.name}</span>
+                                <span className="option-type">{src.type}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <button className="player-close-btn" onClick={onClose}>✕</button>
+                    <button className="player-close-btn" onClick={onClose} title="Close Player">✕</button>
                   </div>
 
                   {forceLoaderOffset && (

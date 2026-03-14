@@ -1308,27 +1308,166 @@
   z-index: 100;
 }
 
-.server-select-glass {
-  background: rgba(0, 0, 0, 0.6);
+/* V4 Liquid Server Switcher (Circle-to-Pill) */
+.server-switcher-liquid {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.server-trigger-main {
+  height: 40px;
+  width: 40px; /* Initial Circle */
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
   color: white;
-  padding: 8px 16px;
-  border-radius: 50px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   cursor: pointer;
-  outline: none;
-  transition: all 0.3s ease;
-  appearance: none;
-  -webkit-appearance: none;
-  text-align: center;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  white-space: nowrap;
 }
 
-.server-select-glass:hover {
-  background: #ff7200;
+.server-trigger-main:hover {
+  width: 160px; /* Expands to Pill */
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50px;
+  padding: 0 15px;
+}
+
+.server-switcher-liquid.is-open .server-trigger-main {
+  width: 180px;
+  background: #ff7200; /* Changes to brand color on click */
   border-color: #ff7200;
+  border-radius: 50px;
+  padding: 0 15px;
+  box-shadow: 0 0 20px rgba(255, 114, 0, 0.4);
+}
+
+.trigger-icon {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 900;
+  font-size: 1.2rem;
+  color: #ff7200;
+}
+
+.server-switcher-liquid.is-open .trigger-icon {
+  color: #fff;
+}
+
+.trigger-text {
+  font-size: 0.85rem;
+  font-weight: 800;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: all 0.4s ease;
+  flex: 1;
+}
+
+.server-trigger-main:hover .trigger-text,
+.server-switcher-liquid.is-open .trigger-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.chevron-icon {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.server-trigger-main:hover .chevron-icon,
+.server-switcher-liquid.is-open .chevron-icon {
+  opacity: 1;
+}
+
+.chevron-icon.rotated {
+  transform: rotate(180deg);
+}
+
+/* Dropdown List V4 */
+.server-dropdown-liquid {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  background: rgba(13, 13, 13, 0.95);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 114, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+  animation: liquidIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1000;
+}
+
+@keyframes liquidIn {
+  from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.server-option-liquid {
+  display: flex;
+  align-items: center;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  gap: 12px;
+}
+
+.server-option-liquid:hover {
+  background: rgba(255, 114, 0, 0.1);
+  padding-left: 22px;
+}
+
+.server-option-liquid.active {
+  background: rgba(255, 114, 0, 0.15);
+}
+
+.option-indicator {
+  width: 6px;
+  height: 6px;
+  background: #444;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.server-option-liquid.active .option-indicator {
+  background: #ff7200;
+  box-shadow: 0 0 10px #ff7200;
+  transform: scale(1.3);
+}
+
+.option-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.option-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.option-type {
+  font-size: 0.7rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.server-option-liquid:hover .option-name {
+  color: #ff7200;
 }
 
 .player-close-btn {
