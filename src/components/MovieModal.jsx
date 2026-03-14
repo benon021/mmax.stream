@@ -54,6 +54,7 @@ function MovieModal({ movie, onClose }) {
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isServerOpen, setIsServerOpen] = useState(false);
   const overlayTimerRef = useRef(null);
+  const serverCloseTimerRef = useRef(null);
 
   const containerRef = useRef(null);
 
@@ -208,12 +209,19 @@ function MovieModal({ movie, onClose }) {
                     <div 
                       className={`server-switcher-liquid ${isServerOpen ? "is-open" : ""}`} 
                       onClick={(e) => e.stopPropagation()}
-                      onMouseLeave={() => setIsServerOpen(false)}
+                      onMouseEnter={() => {
+                        setIsOverlayVisible(true);
+                        if (serverCloseTimerRef.current) clearTimeout(serverCloseTimerRef.current);
+                      }}
+                      onMouseLeave={() => {
+                        serverCloseTimerRef.current = setTimeout(() => {
+                          setIsServerOpen(false);
+                        }, 300); // 300ms grace period
+                      }}
                     >
                       <button 
                         className="server-trigger-main" 
                         onClick={() => setIsServerOpen(!isServerOpen)}
-                        onMouseEnter={() => setIsOverlayVisible(true)}
                       >
                         <span className="trigger-icon">S</span>
                         <span className="trigger-text">Server: {SOURCES[currentSourceIndex].name}</span>
