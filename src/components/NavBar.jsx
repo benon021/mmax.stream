@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import "../css/Navbar.css";
 import MovieCard from "./MovieCard";
+import MovieModal from "./MovieModal";
 import { searchMovies } from "../services/api";
 
 const NAV_LINKS = [
@@ -9,7 +10,7 @@ const NAV_LINKS = [
   { label: "TV Shows", to: "/tv-shows" },
   { label: "Favourites", to: "/favorites" },
   { label: "People", to: "/people" },
-  { label: "Awards", to: null },
+  { label: "Awards", to: "/awards" },
   { label: "More", to: null },
 ];
 
@@ -164,7 +165,10 @@ function NavBar({ onSearch, isScrolled }) {
                   <MovieCard
                     key={movie.id}
                     movie={movie}
-                    onSelect={(m) => setSelectedMovie(m)}
+                    onSelect={(m) => {
+                      setSelectedMovie(m);
+                      setSearchOpen(false);
+                    }}
                   />
                 ))
               )}

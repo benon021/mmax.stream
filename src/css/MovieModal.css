@@ -116,13 +116,6 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   background: #000;
-  overflow: hidden;
-}
-
-.player-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
 }
 
 .player-wrapper-outer:fullscreen {
@@ -143,16 +136,12 @@
 }
 
 .movie-player-iframe {
-  height: 100%;
-  margin-top: 0;
+  height: calc(100% + 140px); /* Over-stretch to hide all native UI */
+  margin-top: -70px; /* Offset */
 }
 
 .movie-player-iframe.is-ready, .movie-player-video.is-ready {
   opacity: 1;
-}
-
-.movie-player-iframe.is-loading {
-  opacity: 1; /* Keep it 1 to prevent blank screen, loader covers it */
 }
 
 .back-to-details {
