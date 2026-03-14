@@ -53,8 +53,6 @@ function MovieModal({ movie, onClose }) {
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isServerOpen, setIsServerOpen] = useState(false);
-  const [progress, setProgress] = useState(35); // Initial visual flow state
-  const [seekFeedback, setSeekFeedback] = useState(null); // { text, type }
   const overlayTimerRef = useRef(null);
   const serverCloseTimerRef = useRef(null);
 
@@ -149,66 +147,18 @@ function MovieModal({ movie, onClose }) {
     }
   }, [isTV, currentMovie.id, selectedSeason]);
 
-  // Keyboard & Message Listeners for Interactive Flow
+  // Interaction Listeners (Show info briefly on movement)
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!isPlaying) return;
-      if (e.key === "ArrowRight") {
-        seekBy(10); // Skip forward 10s
-      } else if (e.key === "ArrowLeft") {
-        seekBy(-10); // Skip back 10s
-      }
-    };
-
     const handleMessage = (e) => {
-      // Sync progress if provider sends time updates (e.g. vidlink)
-      if (e.data && e.data.type === "vidlink_timeupdate") {
-        const { currentTime, duration } = e.data.data;
-        if (duration > 0) {
-          setProgress((currentTime / duration) * 100);
-        }
-      }
+      // Logic for time sync can be kept if needed for progress saving, 
+      // but let's clear it if the user wants purely native controls for now.
     };
 
-    window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("message", handleMessage);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("message", handleMessage);
     };
   }, [isPlaying]);
-
-  const seekBy = (seconds) => {
-    // Attempt to send seek command to supported providers
-    if (iframeRef.current) {
-      setSeekFeedback({
-        text: seconds > 0 ? `+${seconds}s` : `${seconds}s`,
-        type: seconds > 0 ? "forward" : "backward"
-      });
-      
-      setTimeout(() => setSeekFeedback(null), 800);
-
-      iframeRef.current.contentWindow.postMessage({
-        type: "vidlink_seek",
-        data: { seconds }
-      }, "*");
-    }
-  };
-
-  const handleSeekClick = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const newProgress = (x / rect.width) * 100;
-    setProgress(newProgress);
-
-    // Attempt to seek in the IFrame
-    if (iframeRef.current) {
-      iframeRef.current.contentWindow.postMessage({
-        type: "vidlink_seek_to",
-        data: { percentage: newProgress }
-      }, "*");
-    }
-  };
 
   // Branded Loading Logic (Simulated 3s)
   useEffect(() => {
@@ -344,15 +294,6 @@ function MovieModal({ movie, onClose }) {
                   )}
 
                   <div className="player-info-overlay">
-                    {seekFeedback && (
-                      <div className={`seek-feedback-pop ${seekFeedback.type}`}>
-                        <div className="seek-icon-wrap">
-                          {seekFeedback.type === "forward" ? "▶▶" : "◀◀"}
-                        </div>
-                        <span className="seek-text">{seekFeedback.text}</span>
-                      </div>
-                    )}
-
                     <div className="pause-info-content">
                       <h1 className="pause-movie-title">{title}</h1>
                       <div className="pause-meta">
@@ -362,21 +303,6 @@ function MovieModal({ movie, onClose }) {
                         {isTV && <span className="pause-ep">S{selectedSeason}:E{selectedEpisode}</span>}
                       </div>
                       <p className="pause-desc">{currentMovie.overview}</p>
-                    </div>
-
-                    <div className="liquid-flow-container" onClick={(e) => e.stopPropagation()}>
-                      <div className="flow-time-labels">
-                        <span>Live Stream</span>
-                        <span>Multi-Server Active</span>
-                      </div>
-                      <div 
-                        className="flow-line-track"
-                        onClick={handleSeekClick}
-                      >
-                        <div className="flow-line-fill" style={{ width: `${progress}%` }}>
-                          <div className="flow-handle-glow" />
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>

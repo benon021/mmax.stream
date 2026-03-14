@@ -135,8 +135,7 @@
   background: #000;
 }
 
-.movie-player-iframe,
-.movie-player-video {
+.movie-player-iframe {
   width: 100%;
   height: 100%;
   display: block;
@@ -145,12 +144,6 @@
   pointer-events: auto;
   object-fit: contain;
   background: #000;
-}
-
-.movie-player-iframe {
-  height: calc(100% + 140px);
-  /* Over-stretch to hide all native UI */
-  transform: translateY(-70px);
 }
 
 .movie-player-iframe.is-ready,
@@ -1493,63 +1486,19 @@
   transform: rotate(90deg);
 }
 
+/* Premium Info Overlay (V7 - Native Support) */
 .player-info-overlay {
   margin-top: auto;
-  padding: 3rem 4rem; /* Slightly reduced top padding */
+  padding: 2rem 4rem;
   background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  position : relative; /* For seeker feedback positioning */
-}
-
-/* Seek Feedback Pop-up */
-.seek-feedback-pop {
-  position: absolute;
-  top: -150px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  animation: seekPop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  pointer-events: none;
-  z-index: 1000;
-}
-
-@keyframes seekPop {
-  0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
-  20% { opacity: 1; transform: translateX(-50%) scale(1.1); }
-  80% { opacity: 1; transform: translateX(-50%) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) scale(0.9) translateY(-20px); }
-}
-
-.seek-icon-wrap {
-  width: 60px;
-  height: 60px;
-  background: rgba(255, 114, 0, 0.2);
-  border: 2px solid #ff7200;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ff7200;
-  font-size: 1.2rem;
-  font-weight: 900;
-  box-shadow: 0 0 30px rgba(255, 114, 0, 0.4);
-}
-
-.seek-text {
-  color: #fff;
-  font-weight: 900;
-  font-size: 1.1rem;
-  text-shadow: 0 0 10px #000;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none; /* Let clicks pass through to native controls */
+  z-index: 5;
 }
 
 .is-hidden .player-info-overlay {
-  transform: translateY(20px);
+  opacity: 0;
+  transform: translateY(10px);
 }
 
 .pause-info-content {
@@ -1558,7 +1507,7 @@
 }
 
 .pause-movie-title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 900;
   color: #fff;
   margin-bottom: 0.5rem;
@@ -1569,7 +1518,7 @@
   display: flex;
   gap: 15px;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   font-weight: 700;
 }
 
@@ -1584,69 +1533,15 @@
 .pause-ep { color: #ff7200; border-left: 2px solid #555; padding-left: 15px; }
 
 .pause-desc {
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: #ccc;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 1rem;
-}
-
-/* Liquid Flow Control Line */
-.liquid-flow-container {
-  width: 100%;
-  padding-top: 1rem;
-}
-
-.flow-time-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #555;
-  margin-bottom: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-.flow-line-track {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  position: relative;
-  cursor: pointer;
-  transition: height 0.3s ease;
-}
-
-.flow-line-track:hover {
-  height: 6px;
-}
-
-.flow-line-fill {
-  height: 100%;
-  background: #ff7200;
-  border-radius: 10px;
-  position: relative;
-  box-shadow: 0 0 15px rgba(255, 114, 0, 0.5);
-}
-
-.flow-handle-glow {
-  position: absolute;
-  right: -6px;
-  top: 50%;
-  transform: translateY(-50%) scale(0);
-  width: 12px;
-  height: 12px;
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 0 20px #ff7200;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.flow-line-track:hover .flow-handle-glow {
-  transform: translateY(-50%) scale(1);
+  max-width: 500px;
 }
 
 /* Hide main close on playing */
