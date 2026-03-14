@@ -205,7 +205,11 @@ function MovieModal({ movie, onClose }) {
                   onClick={showOverlayBriefly}
                 >
                   <div className="player-top-controls">
-                    <div className={`server-switcher-liquid ${isServerOpen ? "is-open" : ""}`} onClick={(e) => e.stopPropagation()}>
+                    <div 
+                      className={`server-switcher-liquid ${isServerOpen ? "is-open" : ""}`} 
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseLeave={() => setIsServerOpen(false)}
+                    >
                       <button 
                         className="server-trigger-main" 
                         onClick={() => setIsServerOpen(!isServerOpen)}
