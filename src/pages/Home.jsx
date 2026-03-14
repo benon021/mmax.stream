@@ -12,6 +12,7 @@ import {
   getFreeMovies,
   getFreeTV,
   getTopRatedMovies,
+  getUpcomingMovies,
   searchMovies,
 } from "../services/api";
 import { getAllProgress } from "../services/progress";
@@ -19,10 +20,21 @@ import "../css/Home.css";
 
 
 
-// Tab configs — defined outside component so references are stable
-const trendingTabs = [
+// Section configs — focused categories for higher visibility
+const trendingTodayConfig = [
   { label: "Today", fetchFn: () => getTrendingAll("day") },
+];
+
+const trendingWeekConfig = [
   { label: "This Week", fetchFn: () => getTrendingAll("week") },
+];
+
+const trendingMoviesConfig = [
+  { label: "Movies", fetchFn: () => getTrendingAll("week").then(res => res.filter(m => m.media_type === "movie")) },
+];
+
+const trendingTVConfig = [
+  { label: "TV Shows", fetchFn: () => getTrendingAll("week").then(res => res.filter(m => m.media_type === "tv")) },
 ];
 
 const popularTabs = [
@@ -128,13 +140,31 @@ function Home() {
         <>
           <MovieRow title="Continue Watching" tabs={continueWatchingTabs} />
           <div className="section-divider" />
-          <MovieRow title="Trending" tabs={trendingTabs} />
-
+          
+          <MovieRow title="Trending Today" tabs={trendingTodayConfig} />
           <div className="section-divider" />
+          
+          <MovieRow title="Trending This Week" tabs={trendingWeekConfig} />
+          <div className="section-divider" />
+
+          <MovieRow title="Trending Movies" tabs={trendingMoviesConfig} />
+          <div className="section-divider" />
+
+          <MovieRow title="Trending TV Shows" tabs={trendingTVConfig} />
+          <div className="section-divider" />
+
           <MovieRow title="What's Popular" tabs={popularTabs} />
           <div className="section-divider" />
+
           <MovieRow title="Free To Watch" tabs={freeTabs} />
           <div className="section-divider" />
+
+          <MovieRow
+            title="Upcoming Movies"
+            tabs={[{ label: "Latest", fetchFn: getUpcomingMovies }]}
+          />
+          <div className="section-divider" />
+
           <MovieRow
             title="Top Rated"
             tabs={[{ label: "Movies", fetchFn: getTopRatedMovies }]}
