@@ -1,0 +1,363 @@
+/* ── Exact Netflix Hover CSS ──────────────────────── */
+.movie-card-wrapper {
+  position: relative;
+  width: 15rem;
+  /* Reverting to fixed width for horizontal rows */
+  height: 8.5rem;
+  flex-shrink: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.movie-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15rem;
+  height: 8.5rem;
+  background: #0d0d0d;
+
+  border-radius: 4px;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.0, 0.0, 0.2, 1), box-shadow 0.3s ease, height 0.3s cubic-bezier(0.0, 0.0, 0.2, 1);
+  will-change: transform, height;
+  transform-origin: center center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* Base scale out of row on hover */
+.movie-card-wrapper.is-hovered {
+  z-index: 50;
+  /* Above peers in same row */
+}
+
+.movie-card-wrapper.is-hovered .movie-card {
+  height: max-content;
+  max-height: 90vh;
+  /* Ensure it never leaves the screen */
+  min-height: 22rem;
+  /* Reduced from potential larger values */
+  transform: scale(1.25);
+  /* Slightly reduced scale for better screen fit */
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.8), 0 10px 10px rgba(0, 0, 0, 0.7);
+  z-index: 51;
+}
+
+/* Movie Poster Image */
+.movie-poster {
+  position: relative;
+  width: 100%;
+  height: 8.5rem;
+  background: #222;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-radius 0.3s ease;
+}
+
+/* In hover state, poster pushes up, making room for content */
+.movie-card-wrapper.is-hovered .movie-poster {
+  height: 13rem;
+  /* Adjusted for better fit */
+  border-radius: 4px 4px 0 0;
+}
+
+.movie-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: filter 0.3s;
+}
+
+.movie-card-wrapper.is-hovered .movie-poster img {
+  filter: brightness(1.1);
+}
+
+/* R Logo Top Left */
+.netflix-card-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.r-logo-small {
+  font-weight: 900;
+  font-size: 1.1rem;
+  font-style: normal;
+  /* Straight */
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #FFD700 0%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+}
+
+/* Hover Video Player */
+.hover-video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Persistent Progress Bar on Poster */
+.persistent-progress-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  z-index: 3;
+}
+
+.persistent-progress-container.unwatched {
+  background: rgba(0, 0, 0, 0.8); /* Black line when not watched */
+}
+
+.persistent-progress-fill {
+  height: 100%;
+  background: #e50914; /* Netflix Red */
+  transition: width 0.3s ease;
+}
+
+.persistent-progress-container.unwatched .persistent-progress-fill {
+  background: transparent;
+}
+
+
+.hover-video-container iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.video-bottom-gradient {
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to top, #141414 0%, transparent 100%);
+  z-index: 3;
+}
+
+.video-title-floating {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  z-index: 4;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+  text-transform: lowercase;
+  /* match screenshot "inside job" style */
+}
+
+/* Lower Hover Details */
+.netflix-hover-content {
+  position: relative;
+  /* Flows naturally below the poster */
+  height: auto;
+  min-height: 9rem;
+  /* Reduced for better screen fit */
+  background: #141414;
+
+  padding: 1rem;
+  /* Reduced from 1.2rem */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* Start from top instead of end */
+  gap: 0.6rem;
+  /* Slightly more compact */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.movie-card-wrapper.is-hovered .netflix-hover-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Action Buttons Row */
+.hover-actions-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.left-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.nf-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(42, 42, 42, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.nf-btn:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.nf-btn.play {
+  background: white;
+  color: black;
+  border: none;
+}
+
+.nf-btn.play:hover {
+  background: #e6e6e6;
+  transform: scale(1.1);
+}
+
+
+/* Metadata Row */
+.hover-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #fff;
+}
+
+.nf-match-score {
+  color: #FFD700;
+  /* HiMovies Gold */
+}
+
+.nf-maturity-badge {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: #000;
+  padding: 0 4px;
+}
+
+.nf-maturity-badge.age-18 {
+  background: #FFD700;
+  color: black;
+  /* HiMovies Gold Badge */
+  border: none;
+}
+
+.nf-duration {
+  font-weight: 400;
+}
+
+.nf-hd-badge {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  padding: 0 3px;
+  font-weight: 400;
+  font-size: 0.55rem;
+}
+
+/* TV Episode Continuation Data */
+.hover-episode-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.episode-title {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+}
+
+
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #e50914; /* Netflix Red */
+  border-radius: 2px;
+  box-shadow: 0 0 5px rgba(229, 9, 20, 0.5);
+  transition: width 0.3s ease;
+}
+
+.progress-fill.unwatched {
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow: none;
+}
+
+
+.progress-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+
+/* Genre Tags */
+.hover-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.55rem;
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dot {
+  color: #6d6d6e;
+  /* Grey dot */
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .movie-card {
+    transition: none !important;
+  }
+}

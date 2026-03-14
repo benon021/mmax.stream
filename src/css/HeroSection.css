@@ -1,0 +1,224 @@
+/* ── Exact Netflix Hero Carousel ─────────────────────── */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 85vh; /* Massive cinematic height */
+  min-height: 600px;
+  max-height: 900px;
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: white;
+  margin-top: calc(var(--navbar-height) * -1); /* Pull up under transparent navbar */
+}
+
+/* Base fade classes for the carousel */
+.fade-in {
+  opacity: 1;
+  transition: opacity 0.5s ease-in;
+}
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 1;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.hero-video-wrapper {
+    position: absolute;
+    top: -20%; /* Hide youtube UI bounds sometimes */
+    left: 0; right: 0; bottom: -20%;
+    pointer-events: none;
+}
+
+.hero-video {
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* Vignette / Overlay Gradients */
+.hero-vignette-bottom {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 300px;
+  background: linear-gradient(to top, #0d0d0d 0%, rgba(13,13,13,0.8) 30%, transparent 100%);
+
+  z-index: 2;
+}
+
+.hero-vignette-top {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+  z-index: 2;
+}
+
+/* Content Placement (Bottom Left) */
+.hero-content {
+  position: relative;
+  z-index: 3;
+  width: 60%;
+  max-width: 800px;
+  padding: 0 4rem;
+  margin-top: 15vh; /* Push down */
+}
+
+/* Fake N logo / Series text */
+.hero-series-type {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #e5e5e5;
+}
+
+.brand-logo-small {
+  font-weight: 900;
+  font-size: 1.5rem;
+  font-style: normal; /* Straight */
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #FFD700 0%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Exact Netflix Title Size */
+.hero-title {
+  font-size: 3.5rem; /* Reduced from 4.5rem */
+  font-weight: 900;
+  line-height: 1.1;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  max-width: 100%;
+}
+
+.hero-synopsis {
+  font-size: 1.2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  line-height: 1.4;
+  margin-bottom: 2rem;
+  font-weight: 400;
+  color: #fff;
+  width: 90%;
+}
+
+/* Exact Buttons */
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.hero-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 0.6rem 2rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.hero-btn.play {
+  background-color: #FFD700;
+  color: black;
+}
+
+.hero-btn.play:hover {
+  background-color: white;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+.hero-btn.more-info {
+  background-color: rgba(109, 109, 110, 0.7);
+  color: white;
+}
+
+.hero-btn.more-info:hover {
+  background-color: rgba(109, 109, 110, 0.4);
+}
+
+/* Right side controls */
+.hero-right-controls {
+    position: absolute;
+    bottom: 25%;
+    right: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mute-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.5);
+    background: transparent;
+    color: white;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.mute-btn:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.maturity-badge-hero {
+    background-color: rgba(51, 51, 51, 0.8);
+    border-left: 3px solid #FFD700;
+
+    padding: 0.4rem 4rem 0.4rem 1rem; /* Extend to edge */
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.hero-skeleton {
+    width: 100%;
+    height: 85vh;
+    background: #0d0d0d;
+
+}
+
+/* Adjust for responsive */
+@media (max-width: 768px) {
+  .hero-content {
+      width: 100%;
+      padding: 0 2rem;
+  }
+  .hero-title {
+      font-size: 3rem;
+  }
+  .hero-synopsis {
+      font-size: 1rem;
+  }
+  .hero-right-controls {
+      display: none;
+  }
+}

@@ -1,0 +1,448 @@
+/* ================================================================
+   REELIT NAVBAR — Liquid Crystal + macOS Dock Hover
+   ================================================================ */
+
+/* Outer wrapper for sticky stacking */
+.navbar-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* ── Main Bar ──────────────────────────────────────── */
+.navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  /* Translucent dark background on scroll */
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+
+  padding: 0 4rem;
+  /* Match hero padding */
+  display: flex;
+  align-items: center;
+  height: var(--navbar-height);
+  gap: 2rem;
+  z-index: 2000;
+
+  /* Subtle border bottom instead of shimmer */
+  border-bottom: none;
+
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.navbar.is-liquid {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+  border-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Animated shimmer sweep */
+.navbar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(105deg,
+      transparent 30%,
+      rgba(255, 114, 0, 0.08) 45%,
+      rgba(255, 200, 80, 0.12) 50%,
+      rgba(255, 114, 0, 0.08) 55%,
+      transparent 70%);
+  animation: shimmerSweep 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmerSweep {
+  0% {
+    transform: translateX(-60%);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(160%);
+    opacity: 0;
+  }
+}
+
+/* ── Logo ──────────────────────────────────────────── */
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  text-decoration: none;
+  position: relative;
+  z-index: 1;
+}
+
+.logo-wordmark {
+  font-size: 1.55rem;
+  font-weight: 900;
+  font-style: normal;
+  /* Straight, not italic */
+  letter-spacing: -1px;
+  line-height: 1.2;
+  padding: 0.2rem 0;
+  white-space: nowrap;
+  display: inline-block;
+  background: linear-gradient(135deg, #FFD700 0%, #ffffff 55%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.55));
+
+  transition: filter 0.3s;
+}
+
+.navbar-logo:hover .logo-wordmark {
+  filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.9));
+}
+
+.logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FFD700;
+  box-shadow: 0 0 8px #FFD700, 0 0 16px rgba(255, 215, 0, 0.5);
+
+  animation: pulseDot 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+
+  0%,
+  100% {
+    box-shadow: 0 0 6px #ff7200, 0 0 12px rgba(255, 114, 0, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 14px #ff7200, 0 0 28px rgba(255, 114, 0, 0.7);
+  }
+}
+
+/* ── Nav Links (Netflix Smooth) ──────────── */
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  margin-left: 1.5rem;
+}
+
+.nav-link {
+  color: #e5e5e5;
+  /* Netflix light grey */
+  font-size: 0.88rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  transition: color 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease;
+}
+
+/* Hover: Premium "macOS Dock" style expansion + pill background */
+.nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1) translateY(-2px);
+}
+
+/* Active route */
+.nav-link.active-link {
+  color: #ffffff;
+  font-weight: 700;
+  background-color: rgba(255, 215, 0, 0.15);
+  border-bottom: 2px solid #FFD700;
+  border-radius: 4px;
+}
+
+/* ── Right Actions ─────────────────────────────────── */
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.nav-action-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.95rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.nav-action-btn:hover {
+  background: rgba(255, 215, 0, 0.18);
+  color: #FFD700;
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
+
+  transform: translateY(-3px) scale(1.18);
+}
+
+.lang-pill {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.lang-pill:hover {
+  border-color: #FFD700;
+  color: #FFD700;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFD700, #ccac00);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  transition: box-shadow 0.2s, transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.user-avatar:hover {
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+
+  transform: translateY(-3px) scale(1.15);
+}
+
+/* ── Floating Search Overlay ────────────────────────── */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 5vh;
+  /* Initial top padding */
+  z-index: 3000;
+  overflow-y: auto;
+  /* Natural scroll for the whole section */
+  animation: fadeIn 0.2s ease-out;
+  scroll-behavior: smooth;
+}
+
+.floating-search-bar {
+  position: sticky;
+  top: 15px;
+  /* Stick near the top when scrolling */
+  z-index: 100;
+  background: rgba(20, 20, 20, 0.9);
+  /* More translucent dark */
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 90%;
+  max-width: 500px;
+  animation: slidePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.3s ease, box-shadow 0.33s ease, border-color 0.33s ease, background 0.33s ease;
+}
+
+.floating-search-bar:hover {
+  transform: scale(1.02);
+  background: rgba(25, 25, 25, 0.95);
+  border-color: rgba(255, 215, 0, 0.6);
+  box-shadow: 0 25px 60px rgba(255, 215, 0, 0.2), 0 0 15px rgba(255, 215, 0, 0.15);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slidePop {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.floating-search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.floating-search-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.floating-search-bar svg {
+  color: #FFD700;
+  /* HiMovies Gold */
+
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.floating-search-bar:focus-within svg {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.search-clear-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.search-clear-btn:hover {
+  color: white;
+}
+
+/* ── Instant Search Results Grid ───────────────────── */
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1400px;
+  gap: 1.5rem;
+  padding: 0 1rem;
+  min-height: 101vh;
+  /* Allow scroll always to see sticky effect */
+}
+
+.search-results-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  padding: 2rem 0 10rem;
+  /* Scroll is now handled by the overlay */
+}
+
+.search-results-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-results-grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.4);
+  border-radius: 10px;
+}
+
+.search-loading,
+.search-no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 6rem 2rem;
+  font-size: 1.3rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* Ensure hover breakout works inside the overlay scroll */
+.search-results-grid {
+  overflow-x: hidden;
+  /* Prevent horizontal jitter */
+}
+
+/* Specific Card Overrides for Search Results Overlay to match "Picture" style */
+.search-results-grid .movie-card-wrapper {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+}
+
+.search-results-grid .movie-card {
+  width: 100%;
+  height: 100%;
+}
+
+.search-results-grid .movie-poster {
+  height: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+/* Ensure hover expansion still works but resets to natural dimensions in grid */
+.search-results-grid .movie-card-wrapper.is-hovered .movie-card {
+  min-height: 22rem;
+  width: 100%;
+}
+
+/* ── Mobile ────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 1rem;
+    gap: 1rem;
+  }
+
+  .nav-link:not([data-mobile]) {
+    display: none;
+  }
+
+  .navbar-links {
+    flex: 0;
+  }
+}

@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+  --primary: #000000;
+  --primary-light: #111111;
+  --accent: #FFD700; /* HiMovies Gold */
+  --accent-secondary: #ffea00;
+  --accent-dark: #ccac00;
+  --text-light: #ffffff;
+  --text-dark: #ffffff;
+  --text-muted: #aaaaaa;
+  --text-secondary: #cccccc;
+  --bg-light: #0d0d0d;
+  --bg-card: #141414;
+  --border: #222222;
+  --rating-good: #FFD700;
+  --rating-mid: #d2d531;
+  --rating-bad: #db2360;
+  --navbar-height: 72px;
+}
+
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
+  background-color: #0d0d0d;
+  color: white;
+}
+
+
+body {
+  width: 100%;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Scrollbar styling */
+/* Scrollbar styling - Hidden until interaction */
+::-webkit-scrollbar {
+  height: 4px;
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+  transition: background 0.3s ease;
+}
+
+*:hover::-webkit-scrollbar-thumb,
+body:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 215, 0, 0.4);
+}
+
