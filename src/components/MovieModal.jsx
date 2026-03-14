@@ -153,6 +153,12 @@ function MovieModal({ movie, onClose }) {
       return () => clearInterval(interval);
     }
   }, [isPlaying, forceLoaderOffset]);
+  
+  const handlePlayStart = () => {
+    setIsPlaying(true);
+    setForceLoaderOffset(true);
+    setIsVideoLoading(true);
+  };
 
 
 
