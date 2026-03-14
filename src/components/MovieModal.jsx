@@ -50,6 +50,9 @@ function MovieModal({ movie, onClose }) {
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [loadingPercentage, setLoadingPercentage] = useState(0);
   const [forceLoaderOffset, setForceLoaderOffset] = useState(true);
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
+  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const overlayTimerRef = useRef(null);
 
   const containerRef = useRef(null);
 
@@ -84,9 +87,16 @@ function MovieModal({ movie, onClose }) {
   const handlePlayStart = () => {
     setIsPlaying(true);
     setForceLoaderOffset(true);
+    showOverlayBriefly();
   };
 
-  const currentSourceIndex = 0; // Defaulting for simple embed use
+  const showOverlayBriefly = () => {
+    setIsOverlayVisible(true);
+    if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
+    overlayTimerRef.current = setTimeout(() => {
+      setIsOverlayVisible(false);
+    }, 4000); // Overlay stays for 4s during interaction
+  };
 
   // Fetch Logic
   useEffect(() => {
@@ -177,17 +187,39 @@ function MovieModal({ movie, onClose }) {
         <div className="modal-top-section">
           {isPlaying ? (
             <div className="player-wrapper-outer liquid-crystal" ref={containerRef}>
-              <div className="player-container">
-                <iframe
-                  src={videoUrl}
-                  title={title}
-                  className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
-                  allowFullScreen
-                  frameBorder="0"
-                  onLoad={() => setIsVideoLoading(false)}
-                ></iframe>
+                <div className="player-video-bg">
+                  <iframe
+                    src={videoUrl}
+                    title={title}
+                    className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
+                    allowFullScreen
+                    frameBorder="0"
+                    onLoad={() => setIsVideoLoading(false)}
+                  ></iframe>
+                </div>
 
-                <div className="player-ui-overlay">
+                <div
+                  className={`player-ui-layer ${isOverlayVisible ? "is-visible" : "is-hidden"}`}
+                  onMouseMove={showOverlayBriefly}
+                  onClick={showOverlayBriefly}
+                >
+                  <div className="player-top-controls">
+                    <div className="server-switcher-premium">
+                      <select
+                        className="server-select-glass"
+                        value={currentSourceIndex}
+                        onChange={(e) => setCurrentSourceIndex(parseInt(e.target.value))}
+                      >
+                        {SOURCES.map((src, idx) => (
+                          <option key={src.id} value={idx}>
+                            Server: {src.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <button className="player-close-btn" onClick={onClose}>✕</button>
+                  </div>
+
                   {forceLoaderOffset && (
                     <div className="premium-loader-overlay branded-loader">
                       <div className="branded-loader-content">
@@ -195,7 +227,6 @@ function MovieModal({ movie, onClose }) {
                           <span className="loader-m">m</span>
                           <span className="loader-text">MAX.STREAM</span>
                         </div>
-
                         <div className="circular-loader-wrap">
                           <svg className="circular-loader-svg" viewBox="0 0 100 100">
                             <circle className="circular-loader-bg" cx="50" cy="50" r="45" />
@@ -207,58 +238,24 @@ function MovieModal({ movie, onClose }) {
                           </svg>
                           <div className="loader-percentage">{loadingPercentage}%</div>
                         </div>
-
                         <div className="loader-status-text">mmax.steam...</div>
                       </div>
                     </div>
                   )}
 
-                  {!isVideoLoading && (
-                    <>
-                      <button className="floating-return-btn" onClick={() => setIsPlaying(false)}>
-                        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                        </svg>
-                        Return
-                      </button>
-
-                      <div className="liquid-player-controls-bottom">
-                         <div className="liquid-controls-left">
-                            <button className="player-control-icon glass-btn" onClick={() => setIsPlaying(false)} title="Return">
-                               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                  <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-                               </svg>
-                            </button>
-                            <button className="player-control-icon glass-btn" title="Previous Server">
-                               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                  <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
-                               </svg>
-                            </button>
-                         </div>
-                         <div className="liquid-controls-center">
-                            <div className="player-title-info">
-                               <span className="player-title-text">{title}</span>
-                               {isTV && <span className="player-ep-text">Season {selectedSeason} • Episode {selectedEpisode}</span>}
-                            </div>
-                         </div>
-                         <div className="liquid-controls-right">
-                            <button className={`player-control-icon glass-btn ${isTheaterMode ? "active" : ""}`} onClick={() => setIsTheaterMode(!isTheaterMode)} title="Theater Mode">
-                               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" /><path d="M7 10h10v4H7z" />
-                               </svg>
-                            </button>
-                            <button className="player-control-icon glass-btn" title="Settings">
-                               <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                                  <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
-                               </svg>
-                            </button>
-                         </div>
+                  <div className="player-info-overlay">
+                    <div className="pause-info-content">
+                      <h1 className="pause-movie-title">{title}</h1>
+                      <div className="pause-meta">
+                        <span className="pause-rating">{votePercent}% Match</span>
+                        <span className="pause-year">{year}</span>
+                        <span className="pause-maturity">{getRating()}</span>
+                        {isTV && <span className="pause-ep">S{selectedSeason}:E{selectedEpisode}</span>}
                       </div>
-                    </>
-                  )}
+                      <p className="pause-desc">{currentMovie.overview}</p>
+                    </div>
+                  </div>
                 </div>
-
-              </div>
             </div>
           ) : (
             <div className="modal-backdrop-wrap">
