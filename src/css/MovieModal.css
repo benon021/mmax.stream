@@ -1495,9 +1495,12 @@
 
 .player-info-overlay {
   margin-top: auto;
-  padding: 4rem;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  padding: 3rem 4rem; /* Slightly reduced top padding */
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 100%);
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .is-hidden .player-info-overlay {
@@ -1543,6 +1546,62 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+/* Liquid Flow Control Line */
+.liquid-flow-container {
+  width: 100%;
+  padding-top: 1rem;
+}
+
+.flow-time-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #555;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.flow-line-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: height 0.3s ease;
+}
+
+.flow-line-track:hover {
+  height: 6px;
+}
+
+.flow-line-fill {
+  height: 100%;
+  background: #ff7200;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: 0 0 15px rgba(255, 114, 0, 0.5);
+}
+
+.flow-handle-glow {
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 20px #ff7200;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.flow-line-track:hover .flow-handle-glow {
+  transform: translateY(-50%) scale(1);
 }
 
 /* Hide main close on playing */

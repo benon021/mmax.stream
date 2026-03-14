@@ -53,6 +53,7 @@ function MovieModal({ movie, onClose }) {
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isServerOpen, setIsServerOpen] = useState(false);
+  const [progress, setProgress] = useState(35); // Initial visual flow state
   const overlayTimerRef = useRef(null);
   const serverCloseTimerRef = useRef(null);
 
@@ -288,6 +289,25 @@ function MovieModal({ movie, onClose }) {
                         {isTV && <span className="pause-ep">S{selectedSeason}:E{selectedEpisode}</span>}
                       </div>
                       <p className="pause-desc">{currentMovie.overview}</p>
+                    </div>
+
+                    <div className="liquid-flow-container" onClick={(e) => e.stopPropagation()}>
+                      <div className="flow-time-labels">
+                        <span>Live Stream</span>
+                        <span>Multi-Server Active</span>
+                      </div>
+                      <div 
+                        className="flow-line-track"
+                        onClick={(e) => {
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const x = e.clientX - rect.left;
+                          setProgress((x / rect.width) * 100);
+                        }}
+                      >
+                        <div className="flow-line-fill" style={{ width: `${progress}%` }}>
+                          <div className="flow-handle-glow" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
