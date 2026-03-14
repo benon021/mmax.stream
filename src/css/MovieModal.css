@@ -124,7 +124,17 @@
   aspect-ratio: unset;
 }
 
+.player-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 .movie-player-iframe, .movie-player-video {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   display: block;
@@ -133,15 +143,30 @@
   pointer-events: auto;
   object-fit: contain;
   background: #000;
+  z-index: 1;
 }
 
 .movie-player-iframe {
   height: calc(100% + 140px); /* Over-stretch to hide all native UI */
-  margin-top: -70px; /* Offset */
+  transform: translateY(-70px); /* Offset instead of margin to be safer with absolute */
 }
 
 .movie-player-iframe.is-ready, .movie-player-video.is-ready {
   opacity: 1;
+}
+
+.player-ui-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none; /* Let clicks through to video */
+}
+
+.player-ui-overlay > * {
+  pointer-events: auto; /* But catch clicks on our buttons */
 }
 
 .back-to-details {
@@ -1079,6 +1104,74 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Premium Player Controls Overlay */
+.liquid-player-controls-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 2rem 3rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+/* Hide on inactive, or keep always if user prefers premium feel */
+.player-container:hover .liquid-player-controls-bottom {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.liquid-controls-left, .liquid-controls-right {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex: 1;
+}
+
+.liquid-controls-right {
+    justify-content: flex-end;
+}
+
+.liquid-controls-center {
+    flex: 2;
+    text-align: center;
+}
+
+.player-title-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.player-title-text {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+.player-ep-text {
+    font-size: 0.85rem;
+    color: #ff7200;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.player-control-icon {
+    transition: all 0.2s ease;
+}
+
+.player-control-icon:hover {
+    transform: scale(1.1);
+    background: rgba(255, 114, 0, 0.3) !important;
+    border-color: #ff7200 !important;
 }
 
 .cast-character {
