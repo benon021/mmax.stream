@@ -136,8 +136,8 @@
 }
 
 .movie-player-iframe {
-  height: calc(100% + 140px); /* Over-stretch to hide all native UI */
-  margin-top: -70px; /* Offset */
+  height: 100%;
+  margin-top: 0;
 }
 
 .movie-player-iframe.is-ready, .movie-player-video.is-ready {
