@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import "../css/HeroSection.css";
-import { useNavigate } from "react-router-dom";
 import { FEATURED_HERO_CONTENT } from "../config/heroContent";
 import MovieModal from "./MovieModal";
+import { getTrendingWithVideos } from "../services/api";
 
 const IMG_BASE_ORIGINAL = "https://image.tmdb.org/t/p/original";
 
 function HeroSection() {
-  const [movies] = useState(FEATURED_HERO_CONTENT);
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMuted, setIsMuted] = useState(true);
   const [activePlayer, setActivePlayer] = useState(1);
@@ -22,6 +23,27 @@ function HeroSection() {
   const ytPlayer1 = useRef(null);
   const ytPlayer2 = useRef(null);
   const scriptLoaded = useRef(false);
+
+  // Fetch dynamic content
+  useEffect(() => {
+    const loadTrending = async () => {
+      try {
+        const trending = await getTrendingWithVideos("day");
+        if (trending && trending.length > 0) {
+          setMovies(trending);
+        } else {
+          // Fallback if API fails or no trailers found
+          setMovies(FEATURED_HERO_CONTENT);
+        }
+      } catch (error) {
+        console.error("Failed to fetch trending for hero:", error);
+        setMovies(FEATURED_HERO_CONTENT);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadTrending();
+  }, []);
 
   const currentMovie = movies[currentIndex];
 
@@ -47,6 +69,7 @@ function HeroSection() {
 
   // Handle Video Transition Logic
   const handleVideoEnd = () => {
+    if (movies.length <= 1) return;
     setFade(true);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % movies.length);
@@ -67,7 +90,7 @@ function HeroSection() {
 
   // Effect to manage players
   useEffect(() => {
-    if (movies.length === 0 || !window.YT) return;
+    if (movies.length === 0 || !window.YT || !apiReady) return;
 
     const currentVid = movies[currentIndex]?.youtube_key;
     const nextIndex = (currentIndex + 1) % movies.length;
@@ -111,29 +134,43 @@ function HeroSection() {
     }
 
     // Pre-load Next Player
-    if (!otherPlayer.current && nextVid) {
-      otherPlayer.current = new window.YT.Player(otherDivId, {
-        videoId: nextVid,
-        playerVars: { 
-          autoplay: 0, 
-          controls: 0, 
-          mute: 1, 
-          modestbranding: 1, 
-          rel: 0, 
-          iv_load_policy: 3 
-        },
-        events: {
-          onReady: () => {
-            if (activePlayer === 1) setPlayer2Ready(true);
-            else setPlayer1Ready(true);
+    if (movies.length > 1) {
+      if (!otherPlayer.current && nextVid) {
+        otherPlayer.current = new window.YT.Player(otherDivId, {
+          videoId: nextVid,
+          playerVars: { 
+            autoplay: 0, 
+            controls: 0, 
+            mute: 1, 
+            modestbranding: 1, 
+            rel: 0, 
+            iv_load_policy: 3 
+          },
+          events: {
+            onReady: () => {
+              if (activePlayer === 1) setPlayer2Ready(true);
+              else setPlayer1Ready(true);
+            }
           }
-        }
-      });
-    } else if (otherPlayer.current?.cueVideoById && nextVid) {
-      otherPlayer.current.cueVideoById(nextVid);
+        });
+      } else if (otherPlayer.current?.cueVideoById && nextVid) {
+        otherPlayer.current.cueVideoById(nextVid);
+      }
     }
 
   }, [currentIndex, movies, activePlayer, apiReady]);
+
+  if (isLoading || movies.length === 0) {
+    return (
+      <div className="hero-skeleton">
+        <div className="hero-content">
+          <div className="skeleton-title"></div>
+          <div className="skeleton-text"></div>
+          <div className="skeleton-text"></div>
+        </div>
+      </div>
+    );
+  }
 
   const maturityRate = "16+";
 

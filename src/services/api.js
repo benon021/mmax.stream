@@ -106,9 +106,42 @@ export const getUpcomingMovies = async () => {
 
 export const getMovieDetails = async (id, type = "movie") => {
   const res = await fetch(
-    `${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,release_dates,content_ratings&language=en-US`
+    `${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,release_dates,content_ratings,credits,reviews,external_ids,recommendations&language=en-US`
   );
   return res.json();
+};
+
+export const getPopularPeople = async (page = 1) => {
+  const res = await fetch(`${BASE_URL}/person/popular?api_key=${API_KEY}&language=en-US&page=${page}`);
+  const data = await res.json();
+  return data.results;
+};
+
+export const getPersonDetails = async (id) => {
+  const res = await fetch(`${BASE_URL}/person/${id}?api_key=${API_KEY}&append_to_response=combined_credits,external_ids&language=en-US`);
+  return res.json();
+};
+
+export const getTrendingWithVideos = async (timeWindow = "day") => {
+  const res = await fetch(`${BASE_URL}/trending/movie/${timeWindow}?api_key=${API_KEY}&language=en-US`);
+  const data = await res.json();
+  const movies = data.results.slice(0, 10);
+  
+  const detailedMovies = await Promise.all(
+    movies.map(async (movie) => {
+      const details = await getMovieDetails(movie.id, "movie");
+      const videos = details.videos?.results || [];
+      const trailer = videos.find(v => v.type === "Trailer" && v.site === "YouTube") || videos[0];
+      return {
+        ...movie,
+        tmdb_id: movie.id,
+        youtube_key: trailer?.key || null,
+        media_type: "movie"
+      };
+    })
+  );
+  
+  return detailedMovies.filter(m => m.youtube_key); // Only return those with videos
 };
 
 export const getSeasonDetails = async (tvId, seasonNumber) => {
