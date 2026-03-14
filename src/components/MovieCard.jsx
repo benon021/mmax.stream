@@ -108,7 +108,7 @@ function MovieCard({ movie, onSelect }) {
 
             {/* R Series Badge */}
             <div className="netflix-card-badge">
-              <span className="r-logo-small">R</span>
+              <span className="r-logo-small">m</span>
             </div>
 
             {/* Auto-playing Trailer Container */}

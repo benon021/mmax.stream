@@ -1,4 +1,4 @@
-const PROGRESS_KEY = "reelit_progress";
+const PROGRESS_KEY = "mmax_stream_progress";
 
 /**
  * Structure of the progress object:

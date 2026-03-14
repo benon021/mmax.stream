@@ -76,8 +76,10 @@ function NavBar({ onSearch, isScrolled }) {
       <nav className={`navbar ${!isScrolled ? "is-liquid" : ""}`}>
         {/* ── Logo ── */}
         <Link to="/" className="navbar-logo" onClick={() => setSearchOpen(false)}>
-          <span className="logo-wordmark">REELIT</span>
-          <span className="logo-dot" />
+          <span className="mmax-logo-combined">
+            <span className="logo-m">m</span>
+            <span className="logo-text">max.stream</span>
+          </span>
         </Link>
 
         {/* ── Nav Links (Netflix Smooth) ── */}
