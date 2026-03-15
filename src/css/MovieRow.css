@@ -15,14 +15,14 @@
 .movie-row-header h2 {
   font-size: 1.35rem;
   font-weight: 700;
-  color: var(--text-dark);
+  color: #ff7200;
   white-space: nowrap;
 }
 
 /* Tab filter pills */
 .tab-filters {
   display: flex;
-  border: 1.5px solid var(--primary);
+  border: 1.5px solid #ff7200;
   border-radius: 30px;
   overflow: hidden;
 }
@@ -33,14 +33,14 @@
   padding: 0.3rem 1rem;
   font-size: 0.82rem;
   font-weight: 500;
-  color: var(--primary);
+  color: #ff7200;
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
   white-space: nowrap;
 }
 
 .tab-filter-btn.active {
-  background: var(--primary);
+  background: #ff7200;
   color: white;
 }
 
@@ -112,4 +112,42 @@
   height: 1px;
   background: var(--border);
   margin: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .movie-row-section {
+    padding: 1.25rem 1rem 0.75rem;
+  }
+
+  .movie-row-scroll {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+    margin-top: -2.5rem;
+    margin-bottom: -2.5rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .section-divider {
+    margin: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-row-section {
+    padding: 1rem 0.75rem 0.5rem;
+  }
+
+  .movie-row-scroll {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    margin-top: -2rem;
+    margin-bottom: -2rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .section-divider {
+    margin: 0 0.75rem;
+  }
 }

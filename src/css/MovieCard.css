@@ -8,6 +8,11 @@
   border-radius: 4px;
   cursor: pointer;
   z-index: 1;
+
+  /* Expand hover hit area (so expanded hover content doesn’t flicker away) */
+  transition: transform 0.3s cubic-bezier(0.0, 0.0, 0.2, 1), box-shadow 0.3s ease;
+  will-change: transform, box-shadow;
+  transform-origin: center center;
 }
 
 .movie-card {
@@ -20,28 +25,34 @@
 
   border-radius: 4px;
   overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.0, 0.0, 0.2, 1), box-shadow 0.3s ease, height 0.3s cubic-bezier(0.0, 0.0, 0.2, 1);
-  will-change: transform, height;
-  transform-origin: center center;
+  transition: height 0.3s cubic-bezier(0.0, 0.0, 0.2, 1), width 0.3s cubic-bezier(0.0, 0.0, 0.2, 1);
+  will-change: height, width;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
 }
 
-/* Base scale out of row on hover */
+/* Base hover appearance: keep card compact with full details visible */
 .movie-card-wrapper.is-hovered {
   z-index: 50;
   /* Above peers in same row */
 }
 
 .movie-card-wrapper.is-hovered .movie-card {
-  height: max-content;
-  max-height: 90vh;
-  /* Ensure it never leaves the screen */
-  min-height: 22rem;
-  /* Reduced from potential larger values */
-  transform: scale(1.25);
-  /* Slightly reduced scale for better screen fit */
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.8), 0 10px 10px rgba(0, 0, 0, 0.7);
+  height: 22.5rem;
+  width: 15rem;
+  min-height: 22.5rem;
+  transform: translateY(-1rem) scale(1.1);
+  transform-origin: top center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75), 0 10px 18px rgba(0, 0, 0, 0.65);
   z-index: 51;
+}
+
+/* Prevent expanded hover overlay from blocking pointer events on adjacent cards */
+.movie-card-wrapper {
+  overflow: visible;
+}
+
+.movie-card-wrapper:hover {
+  z-index: 60;
 }
 
 /* Movie Poster Image */
@@ -57,7 +68,7 @@
 
 /* In hover state, poster pushes up, making room for content */
 .movie-card-wrapper.is-hovered .movie-poster {
-  height: 13rem;
+  height: 11.5rem;
   /* Adjusted for better fit */
   border-radius: 4px 4px 0 0;
 }
@@ -105,6 +116,8 @@
   z-index: 2;
   opacity: 0;
   animation: fadeIn 0.4s ease forwards;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
 }
 
 @keyframes fadeIn {
@@ -146,6 +159,19 @@
   pointer-events: none;
 }
 
+/* Hide YouTube watermark / logo (overlay on top of iframe) */
+.youtube-watermark-blocker {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 38px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 4;
+}
+
 .video-bottom-gradient {
   position: absolute;
   bottom: 0px;
@@ -176,21 +202,22 @@
   position: relative;
   /* Flows naturally below the poster */
   height: auto;
-  min-height: 9rem;
+  min-height: 8rem;
   /* Reduced for better screen fit */
   background: #141414;
 
-  padding: 1rem;
-  /* Reduced from 1.2rem */
+  padding: 0.8rem;
+  /* Reduced for tighter fit */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   /* Start from top instead of end */
-  gap: 0.6rem;
+  gap: 0.45rem;
   /* Slightly more compact */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
+  overflow: hidden;
 }
 
 .movie-card-wrapper.is-hovered .netflix-hover-content {
@@ -252,6 +279,10 @@
   font-weight: 700;
   margin-bottom: 0.4rem;
   color: #fff;
+}
+
+.nf-year {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .nf-match-score {
@@ -359,5 +390,72 @@
 @media (prefers-reduced-motion: reduce) {
   .movie-card {
     transition: none !important;
+  }
+}
+
+/* Responsive scaling for smaller devices */
+@media (max-width: 768px) {
+  .movie-card-wrapper {
+    width: 12rem;
+    height: 7rem;
+  }
+
+  .movie-card {
+    width: 12rem;
+    height: 7rem;
+  }
+
+  /* Avoid hover expansion on touch devices where it can feel clunky */
+  .movie-card-wrapper.is-hovered {
+    transform: none;
+    z-index: 1;
+  }
+
+  .movie-card-wrapper.is-hovered .movie-card {
+    height: 7rem;
+    width: 12rem;
+    transform: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .hover-meta-row {
+    font-size: 0.45rem;
+  }
+
+  .episode-title {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-card-wrapper {
+    width: 10.5rem;
+    height: 6rem;
+  }
+
+  .movie-card {
+    width: 10.5rem;
+    height: 6rem;
+  }
+
+  /* Keep hover behavior lightweight on very small screens */
+  .movie-card-wrapper.is-hovered {
+    transform: none;
+    z-index: 1;
+  }
+
+  .movie-card-wrapper.is-hovered .movie-card {
+    height: 6rem;
+    width: 10.5rem;
+    transform: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .hover-meta-row {
+    font-size: 0.4rem;
+  }
+
+  .hover-tags-row {
+    font-size: 0.45rem;
   }
 }

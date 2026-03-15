@@ -81,3 +81,28 @@ body:hover::-webkit-scrollbar-thumb {
   background: rgba(255, 114, 0, 0.4);
 }
 
+/* Mobile / small screen responsive defaults */
+@media (max-width: 768px) {
+  :root {
+    --navbar-height: 60px;
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  .movie-row-section {
+    padding: 1.5rem 1.25rem 1rem;
+  }
+
+  .modal-overlay {
+    padding-top: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+}
+

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 import MovieCard from "./MovieCard";
 import "../css/MovieRow.css";
 
@@ -20,8 +20,47 @@ function MovieRow({ title, tabs }) {
   const [activeTab, setActiveTab] = useState(0);
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
+  const rowRef = useRef(null);
+  const scrollRef = useRef(null);
+
+  const handleWheel = (event) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    // Only hijack vertical wheel scroll when the row can actually scroll horizontally.
+    const canScrollHorizontally = el.scrollWidth > el.clientWidth;
+    if (!canScrollHorizontally) return;
+
+    // Use deltaY to drive horizontal scroll, like Netflix row scroll.
+    if (Math.abs(event.deltaY) > 0) {
+      event.preventDefault();
+      el.scrollLeft += event.deltaY;
+    }
+  };
+
+  // Lazy-load rows when they enter the viewport to reduce startup work
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
+    if (!isVisible) return;
+
     let cancelled = false;
     setLoading(true);
     const fetchFn = tabs[activeTab]?.fetchFn;
@@ -38,11 +77,13 @@ function MovieRow({ title, tabs }) {
         if (!cancelled) setLoading(false);
       });
 
-    return () => { cancelled = true; };
-  }, [activeTab, tabs]);
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, tabs, isVisible]);
 
   return (
-    <section className="movie-row-section">
+    <section ref={rowRef} className="movie-row-section">
       <div className="movie-row-header">
         <h2>{title}</h2>
         {tabs.length > 1 && (
@@ -60,7 +101,11 @@ function MovieRow({ title, tabs }) {
         )}
       </div>
 
-      <div className="movie-row-scroll">
+      <div
+        ref={scrollRef}
+        className="movie-row-scroll"
+        onWheel={handleWheel}
+      >
         {loading ? (
           <SkeletonCards />
         ) : (
@@ -73,4 +118,4 @@ function MovieRow({ title, tabs }) {
   );
 }
 
-export default MovieRow;
+export default memo(MovieRow);

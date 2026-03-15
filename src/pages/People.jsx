@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { getPopularPeople } from "../services/api";
+import PersonModal from "../components/PersonModal";
 import "../css/People.css";
 
 function People() {
   const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+  const [selectedPerson, setSelectedPerson] = useState(null);
 
   useEffect(() => {
     const fetchPeople = async () => {
@@ -31,7 +33,11 @@ function People() {
 
       <div className="people-grid-premium">
         {people.map((person) => (
-          <div key={person.id} className="person-card-liquid">
+          <div
+            key={person.id}
+            className="person-card-liquid"
+            onClick={() => setSelectedPerson(person.id)}
+          >
             <div className="person-img-wrap">
               <img 
                 src={person.profile_path ? `https://image.tmdb.org/t/p/w235_and_h235_face${person.profile_path}` : "https://via.placeholder.com/235x235?text=No+Photo"} 
@@ -55,6 +61,10 @@ function People() {
         <button className="load-more-people-btn" onClick={() => setPage(p => p + 1)}>
           LOAD MORE TALENT
         </button>
+      )}
+
+      {selectedPerson && (
+        <PersonModal personId={selectedPerson} onClose={() => setSelectedPerson(null)} />
       )}
     </div>
   );

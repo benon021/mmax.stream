@@ -122,13 +122,24 @@ export const getPersonDetails = async (id) => {
   return res.json();
 };
 
+function shuffleArray(array) {
+  const result = array.slice();
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
 export const getTrendingWithVideos = async (timeWindow = "day") => {
   const res = await fetch(`${BASE_URL}/trending/movie/${timeWindow}?api_key=${API_KEY}&language=en-US`);
   const data = await res.json();
-  const movies = data.results.slice(0, 10);
-  
+
+  // Grab more items so we can reliably end up with 10 that have trailers
+  const candidates = data.results.slice(0, 20);
+
   const detailedMovies = await Promise.all(
-    movies.map(async (movie) => {
+    candidates.map(async (movie) => {
       const details = await getMovieDetails(movie.id, "movie");
       const videos = details.videos?.results || [];
       const trailer = videos.find(v => v.type === "Trailer" && v.site === "YouTube") || videos[0];
@@ -140,8 +151,10 @@ export const getTrendingWithVideos = async (timeWindow = "day") => {
       };
     })
   );
-  
-  return detailedMovies.filter(m => m.youtube_key); // Only return those with videos
+
+  // Randomize order so each load shows a different sequence
+  const withTrailers = shuffleArray(detailedMovies.filter((m) => m.youtube_key));
+  return withTrailers.slice(0, 10);
 };
 
 export const getSeasonDetails = async (tvId, seasonNumber) => {

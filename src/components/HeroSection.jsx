@@ -200,7 +200,13 @@ function HeroSection() {
           <span className="series-text">M A X . S T R E A M</span>
         </div>
 
-        <h1 className="hero-title">{currentMovie.title || currentMovie.name}</h1>
+        <h1 className="hero-title">
+          {currentMovie.title ||
+            currentMovie.name ||
+            currentMovie.original_title ||
+            currentMovie.original_name ||
+            "Unknown"}
+        </h1>
 
         <p className="hero-synopsis">
           {currentMovie.overview?.length > 150
@@ -213,7 +219,10 @@ function HeroSection() {
             <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z" /></svg>
             <span>Play</span>
           </button>
-          <button className="hero-btn more-info">
+          <button
+            className="hero-btn more-info"
+            onClick={() => setSelectedMovie({ id: currentMovie.tmdb_id, type: currentMovie.media_type })}
+          >
             <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>
             <span>More Info</span>
           </button>

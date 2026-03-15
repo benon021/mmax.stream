@@ -146,6 +146,12 @@
   background: #000;
 }
 
+/* Allow page scroll while hovering over the player once playback starts */
+.modal-content.playing .movie-player-iframe {
+  /* Keep the embedded player interactive so native controls (play/pause/fullscreen) remain usable. */
+  pointer-events: auto;
+}
+
 .movie-player-iframe.is-ready,
 .movie-player-video.is-ready {
   opacity: 1;
@@ -650,6 +656,26 @@
   color: #999;
   margin-right: 8px;
   font-weight: 600;
+}
+
+.modal-episode-info {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  gap: 1.5rem;
+  color: #ccc;
+  font-size: 0.95rem;
+}
+
+.modal-episode-info .modal-episode-label {
+  color: #999;
+  font-weight: 600;
+}
+
+.modal-episode-info .modal-episode-value {
+  color: #fff;
+  font-weight: 700;
 }
 
 /* ── Episodes Section ──────────────────────────────── */

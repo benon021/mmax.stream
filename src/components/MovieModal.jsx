@@ -202,24 +202,25 @@ function MovieModal({ movie, onClose }) {
 
         <div className="modal-top-section">
           {isPlaying ? (
-            <div className="player-wrapper-outer liquid-crystal" ref={containerRef}>
-                <div className="player-video-bg">
-                  <iframe
-                    ref={iframeRef}
-                    src={videoUrl}
-                    title={title}
-                    className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
-                    allowFullScreen
-                    frameBorder="0"
-                    onLoad={() => setIsVideoLoading(false)}
-                  ></iframe>
-                </div>
+            <div
+              className="player-wrapper-outer liquid-crystal"
+              ref={containerRef}
+              onMouseMove={showOverlayBriefly}
+              onClick={showOverlayBriefly}
+            >
+              <div className="player-video-bg">
+                <iframe
+                  ref={iframeRef}
+                  src={videoUrl}
+                  title={title}
+                  className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
+                  allowFullScreen
+                  frameBorder="0"
+                  onLoad={() => setIsVideoLoading(false)}
+                ></iframe>
+              </div>
 
-                <div
-                  className={`player-ui-layer ${isOverlayVisible ? "is-visible" : "is-hidden"}`}
-                  onMouseMove={showOverlayBriefly}
-                  onClick={showOverlayBriefly}
-                >
+              <div className={`player-ui-layer ${isOverlayVisible ? "is-visible" : "is-hidden"}`}>
                   <div className="player-top-controls">
                     <div 
                       className={`server-switcher-liquid ${isServerOpen ? "is-open" : ""}`} 
@@ -389,6 +390,62 @@ function MovieModal({ movie, onClose }) {
             <p><span>Language:</span> {fullDetails?.spoken_languages?.map(l => l.english_name).join(", ") || currentMovie.original_language?.toUpperCase()}</p>
           </div>
 
+          {isTV && (
+            <div className="episodes-section">
+              <div className="episodes-header">
+                <h2 className="episodes-title">Episodes</h2>
+                {(fullDetails?.number_of_seasons || 1) > 1 && (
+                  <div className="season-custom-dropdown" onClick={(e) => e.stopPropagation()}>
+                    <button className={`season-trigger ${isSeasonOpen ? "open" : ""}`} onClick={() => setIsSeasonOpen(!isSeasonOpen)}>
+                      <span>Season {selectedSeason}</span>
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M7 10l5 5 5-5z" /></svg>
+                    </button>
+                    {isSeasonOpen && fullDetails && (
+                      <div className="season-menu liquid-menu">
+                        {[...Array(fullDetails.number_of_seasons)].map((_, i) => (
+                          <div key={i + 1} className={`season-option ${selectedSeason === i + 1 ? "active" : ""}`} onClick={() => { setSelectedSeason(i + 1); setIsSeasonOpen(false); setSelectedEpisode(1); }}>
+                            Season {i + 1}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {loadingEpisodes ? (
+                <div className="episodes-loading">Loading episodes...</div>
+              ) : (
+                <div className="episodes-list">
+                  {episodes.map((ep) => (
+                    <div key={ep.id} className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`} onClick={() => { if (expandedEpisode === ep.episode_number) { setSelectedEpisode(ep.episode_number); setIsPlaying(true); } else { setExpandedEpisode(ep.episode_number); } }}>
+                      <div className="episode-header-row">
+                        <div className="episode-number">{ep.episode_number}</div>
+                        <h3 className="episode-name">{ep.name}</h3>
+                        <span className="episode-runtime">{ep.runtime ? `${ep.runtime}m` : ""}</span>
+                      </div>
+                      <div className="episode-expandable-content">
+                        <div className="episode-body">
+                          <div className="episode-thumbnail-wrap">
+                            <img src={ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : `${IMG_BASE_BACKDROP}${currentMovie.backdrop_path}`} alt={ep.name} className="episode-thumbnail" />
+                            <div className="episode-play-overlay"><svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40"><path d="M8 5v14l11-7z" /></svg></div>
+                          </div>
+                          <div className="episode-details">
+                            <p className="episode-desc">{ep.overview || "No description available."}</p>
+                            <button className="episode-play-inline-btn liquid-btn" onClick={(e) => { e.stopPropagation(); setSelectedEpisode(ep.episode_number); setIsPlaying(true); }}>
+                              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z" /></svg>
+                              PLAY NOW
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="production-grid-premium">
             {fullDetails?.production_companies?.filter(c => c.logo_path).slice(0, 4).map(company => (
               <div key={company.id} className="production-logo-wrap" title={company.name}>
@@ -456,62 +513,6 @@ function MovieModal({ movie, onClose }) {
               )) || <p className="no-reviews">No reviews yet.</p>}
             </div>
           </div>
-
-          {isTV && (
-            <div className="episodes-section">
-              <div className="episodes-header">
-                <h2 className="episodes-title">Episodes</h2>
-                {(fullDetails?.number_of_seasons || 1) > 1 && (
-                  <div className="season-custom-dropdown" onClick={(e) => e.stopPropagation()}>
-                    <button className={`season-trigger ${isSeasonOpen ? "open" : ""}`} onClick={() => setIsSeasonOpen(!isSeasonOpen)}>
-                      <span>Season {selectedSeason}</span>
-                      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M7 10l5 5 5-5z" /></svg>
-                    </button>
-                    {isSeasonOpen && fullDetails && (
-                      <div className="season-menu liquid-menu">
-                        {[...Array(fullDetails.number_of_seasons)].map((_, i) => (
-                          <div key={i + 1} className={`season-option ${selectedSeason === i + 1 ? "active" : ""}`} onClick={() => { setSelectedSeason(i + 1); setIsSeasonOpen(false); setSelectedEpisode(1); }}>
-                            Season {i + 1}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {loadingEpisodes ? (
-                <div className="episodes-loading">Loading episodes...</div>
-              ) : (
-                <div className="episodes-list">
-                  {episodes.map((ep) => (
-                    <div key={ep.id} className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`} onClick={() => { if (expandedEpisode === ep.episode_number) { setSelectedEpisode(ep.episode_number); setIsPlaying(true); } else { setExpandedEpisode(ep.episode_number); } }}>
-                      <div className="episode-header-row">
-                        <div className="episode-number">{ep.episode_number}</div>
-                        <h3 className="episode-name">{ep.name}</h3>
-                        <span className="episode-runtime">{ep.runtime ? `${ep.runtime}m` : ""}</span>
-                      </div>
-                      <div className="episode-expandable-content">
-                        <div className="episode-body">
-                          <div className="episode-thumbnail-wrap">
-                            <img src={ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : `${IMG_BASE_BACKDROP}${currentMovie.backdrop_path}`} alt={ep.name} className="episode-thumbnail" />
-                            <div className="episode-play-overlay"><svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40"><path d="M8 5v14l11-7z" /></svg></div>
-                          </div>
-                          <div className="episode-details">
-                            <p className="episode-desc">{ep.overview || "No description available."}</p>
-                            <button className="episode-play-inline-btn liquid-btn" onClick={(e) => { e.stopPropagation(); setSelectedEpisode(ep.episode_number); setIsPlaying(true); }}>
-                              <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z" /></svg>
-                              PLAY NOW
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
           <div className="related-section">
             <h2 className="related-title">More Like This</h2>
