@@ -144,9 +144,13 @@
 
 @media (max-width: 768px) {
     .people-page {
-        padding: 80px 2rem 2rem;
+        padding: 80px 1.2rem 2rem;
     }
     .people-title-premium {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+    }
+    .people-grid-premium {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.25rem;
     }
 }

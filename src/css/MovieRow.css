@@ -24,7 +24,12 @@
   display: flex;
   border: 1.5px solid #ff7200;
   border-radius: 30px;
-  overflow: hidden;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+}
+
+.tab-filters::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
 }
 
 .tab-filter-btn {

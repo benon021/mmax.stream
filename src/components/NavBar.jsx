@@ -6,8 +6,42 @@ import MovieModal from "./MovieModal";
 import { searchMovies } from "../services/api";
 
 const NAV_LINKS = [
-  { label: "Movies", to: "/" },
-  { label: "TV Shows", to: "/tv-shows" },
+  { label: "Home", to: "/" },
+  { 
+    label: "Movies", 
+    to: "/",
+    subItems: [
+      { label: "Featured", to: "/?type=featured" },
+      { label: "Popular", to: "/?type=popular" },
+      { label: "Top Rated", to: "/?type=top_rated" },
+      { label: "Upcoming", to: "/?type=upcoming" },
+      { label: "Anime", to: "/?genre=anime" }
+    ]
+  },
+  { 
+    label: "TV Series", 
+    to: "/tv-shows",
+    subItems: [
+      { label: "Popular", to: "/tv-shows?type=popular" },
+      { label: "Airing Today", to: "/tv-shows?type=airing_today" },
+      { label: "On the Air", to: "/tv-shows?type=on_the_air" },
+      { label: "Top Rated", to: "/tv-shows?type=top_rated" }
+    ]
+  },
+  { 
+    label: "Genres", 
+    to: null,
+    subItems: [
+      { label: "Action", to: "/?genre=action" },
+      { label: "Adventure", to: "/?genre=adventure" },
+      { label: "Animation", to: "/?genre=animation" },
+      { label: "Comedy", to: "/?genre=comedy" },
+      { label: "Crime", to: "/?genre=crime" },
+      { label: "Documentary", to: "/?genre=documentary" },
+      { label: "Drama", to: "/?genre=drama" },
+      { label: "Family", to: "/?genre=family" }
+    ]
+  },
   { label: "Favourites", to: "/favorites" },
   { label: "People", to: "/people" },
   { label: "Awards", to: "/awards" },
@@ -20,6 +54,8 @@ function NavBar({ onSearch, isScrolled }) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [expandedSection, setExpandedSection] = useState(null);
   const location = useLocation();
 
   const fetchResults = useCallback(async (q) => {
@@ -62,54 +98,135 @@ function NavBar({ onSearch, isScrolled }) {
 
   const isActive = (path) => path && location.pathname === path;
 
+  const handleLinkClick = () => {
+    setMobileMenuOpen(false);
+    setExpandedSection(null);
+    setSearchOpen(false);
+  };
+
+  const toggleSection = (label) => {
+    setExpandedSection(expandedSection === label ? null : label);
+  };
+
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") setSearchOpen(false);
-    };
-    if (searchOpen) {
-      document.addEventListener("keydown", handleEsc);
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
     }
-    return () => document.removeEventListener("keydown", handleEsc);
-  }, [searchOpen]);
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
 
   return (
     <>
       <nav className={`navbar ${!isScrolled ? "is-liquid" : ""}`}>
         {/* ── Logo ── */}
-        <Link to="/" className="navbar-logo" onClick={() => setSearchOpen(false)}>
+        <Link to="/" className="navbar-logo" onClick={handleLinkClick}>
           <span className="mmax-logo-combined">
             <span className="logo-m">m</span>
             <span className="logo-text">max.stream</span>
           </span>
         </Link>
 
-        {/* ── Nav Links (Netflix Smooth) ── */}
-        <div className="navbar-links">
-          {NAV_LINKS.map((item) => {
-            const cls = `nav-link ${isActive(item.to) ? "active-link" : ""}`;
+        {/* ── Hamburger Menu (Mobile) ── */}
+        <button 
+          className={`hamburger ${mobileMenuOpen ? "is-active" : ""}`} 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle navigation"
+        >
+          <span className="hamburger-box">
+            <span className="hamburger-inner"></span>
+          </span>
+        </button>
 
-            return item.to ? (
-              <Link
-                key={item.label}
-                to={item.to}
-                className={cls}
-                onClick={() => setSearchOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ) : (
-              <span
-                key={item.label}
-                className={cls}
-                style={{ cursor: "default" }}
-              >
-                {item.label}
+        {/* ── Mobile Nav Overlay ── */}
+        <div className={`navbar-links ${mobileMenuOpen ? "mobile-open" : ""}`}>
+          <div className="mobile-menu-scroll">
+            {/* Logo in Menu */}
+            <div className="mobile-menu-branding">
+              <span className="mmax-logo-combined">
+                <span className="logo-m">m</span>
+                <span className="logo-text">max.stream</span>
               </span>
-            );
-          })}
-        </div>
+            </div>
 
-        {/* ── Right Actions ── */}
+            {/* Search in Menu */}
+            <div className="mobile-menu-search">
+              <form onSubmit={handleSubmit} className="mobile-search-form">
+                <input
+                  type="text"
+                  placeholder="Search movies, tv, people..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="mobile-search-input"
+                />
+                <button type="submit" className="mobile-search-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </button>
+              </form>
+            </div>
+
+            <div className="mobile-links-container">
+              {NAV_LINKS.map((item) => {
+              const hasSub = item.subItems && item.subItems.length > 0;
+              const isSectionExpanded = expandedSection === item.label;
+
+              return (
+                <div key={item.label} className="nav-item-wrap">
+                  <div className="nav-main-link-row">
+                    {item.to ? (
+                      <Link
+                        to={item.to}
+                        className={`nav-link ${isActive(item.to) ? "active-link" : ""}`}
+                        onClick={handleLinkClick}
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <span className="nav-link non-link" onClick={() => hasSub && toggleSection(item.label)}>
+                        {item.label}
+                      </span>
+                    )}
+                    
+                    {hasSub && (
+                      <button 
+                        className={`sub-toggle-btn ${isSectionExpanded ? "is-rotated" : ""}`}
+                        onClick={() => toggleSection(item.label)}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" width="16" height="16">
+                          <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+
+                  {hasSub && isSectionExpanded && (
+                    <div className="sub-menu-grid">
+                      {item.subItems.map((sub) => (
+                        <Link
+                          key={sub.label}
+                          to={sub.to}
+                          className="sub-nav-link"
+                          onClick={handleLinkClick}
+                        >
+                          {sub.label}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Right Actions ── */}
         <div className="navbar-actions">
           <button className="nav-action-btn" title="Add content">＋</button>
           <span className="lang-pill">EN</span>
@@ -129,7 +246,13 @@ function NavBar({ onSearch, isScrolled }) {
       {/* ── Search Overlay ── */}
       {searchOpen && (
         <div className="search-overlay" onClick={() => setSearchOpen(false)}>
-          <div className="search-container">
+          <div className="search-container" onClick={(e) => e.stopPropagation()}>
+            <div className="search-logo-wrapper">
+              <span className="navbar-logo">
+                <span className="logo-m">m</span>
+                <span className="logo-text">max.stream</span>
+              </span>
+            </div>
             <form
               className="floating-search-bar"
               onSubmit={handleSubmit}
@@ -140,7 +263,7 @@ function NavBar({ onSearch, isScrolled }) {
               </svg>
               <input
                 type="text"
-                placeholder="Search movies, series, tv shows..."
+                placeholder="Search..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 autoFocus

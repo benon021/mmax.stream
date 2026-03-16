@@ -2,7 +2,7 @@
 .hero {
   position: relative;
   width: 100%;
-  height: 85vh; /* Massive cinematic height */
+  height: 85vh;
   min-height: 600px;
   max-height: 900px;
   background-color: #000;
@@ -10,18 +10,7 @@
   align-items: center;
   overflow: hidden;
   color: white;
-  margin-top: calc(var(--navbar-height) * -1); /* Pull up under transparent navbar */
-}
-
-/* Base fade classes for the carousel */
-.fade-in {
-  opacity: 1;
-  transition: opacity 0.5s ease-in;
-}
-
-.fade-out {
-  opacity: 0;
-  transition: opacity 0.5s ease-out;
+  margin-top: calc(var(--navbar-height) * -1);
 }
 
 .hero-background {
@@ -52,10 +41,7 @@
 }
 
 .show-p1 #hero-yt-player-1 { opacity: 1; z-index: 2; }
-.show-p1 #hero-yt-player-2 { opacity: 0; z-index: 1; }
-
 .show-p2 #hero-yt-player-2 { opacity: 1; z-index: 2; }
-.show-p2 #hero-yt-player-1 { opacity: 0; z-index: 1; }
 
 .hero-image.fallback {
   position: absolute;
@@ -64,17 +50,11 @@
   z-index: 0;
 }
 
-.transitioning .player-frame {
-  filter: blur(5px);
-}
-
-/* Vignette / Overlay Gradients */
 .hero-vignette-bottom {
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 300px;
   background: linear-gradient(to top, #0d0d0d 0%, rgba(13,13,13,0.8) 30%, transparent 100%);
-
   z-index: 2;
 }
 
@@ -86,17 +66,15 @@
   z-index: 2;
 }
 
-/* Content Placement (Bottom Left) */
 .hero-content {
   position: relative;
   z-index: 3;
   width: 60%;
   max-width: 800px;
   padding: 0 4rem;
-  margin-top: 15vh; /* Push down */
+  margin-top: 15vh;
 }
 
-/* Fake N logo / Series text */
 .hero-series-type {
     display: flex;
     align-items: center;
@@ -111,7 +89,6 @@
 .brand-logo-small {
   font-weight: 900;
   font-size: 1.5rem;
-  font-style: normal; /* Straight */
   letter-spacing: -1px;
   background: linear-gradient(135deg, #ff7200 0%, #ffffff 100%);
   -webkit-background-clip: text;
@@ -119,7 +96,6 @@
   background-clip: text;
 }
 
-/* Exact Netflix Title Size */
 .hero-title {
   font-size: 2.8rem;
   font-weight: 900;
@@ -140,7 +116,6 @@
   width: 90%;
 }
 
-/* Exact Buttons */
 .hero-actions {
   display: flex;
   gap: 1rem;
@@ -162,12 +137,11 @@
 
 .hero-btn.play {
   background-color: #ff7200;
-  color: black;
+  color: #fff;
 }
 
 .hero-btn.play:hover {
-  background-color: white;
-  box-shadow: 0 0 20px rgba(255, 114, 0, 0.4);
+  background-color: #e66600;
 }
 
 .hero-btn.more-info {
@@ -179,7 +153,6 @@
   background-color: rgba(109, 109, 110, 0.4);
 }
 
-/* Right side controls */
 .hero-right-controls {
     position: absolute;
     bottom: 25%;
@@ -204,15 +177,10 @@
     cursor: pointer;
 }
 
-.mute-btn:hover {
-    background: rgba(255,255,255,0.1);
-}
-
 .maturity-badge-hero {
     background-color: rgba(51, 51, 51, 0.8);
     border-left: 3px solid #ff7200;
-
-    padding: 0.4rem 4rem 0.4rem 1rem; /* Extend to edge */
+    padding: 0.4rem 4rem 0.4rem 1rem;
     font-size: 1.2rem;
     font-weight: 600;
 }
@@ -225,19 +193,6 @@
     align-items: center;
     position: relative;
     overflow: hidden;
-}
-
-.hero-skeleton::after {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-    animation: skeleton-shimmer 2s infinite;
-}
-
-@keyframes skeleton-shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
 }
 
 .skeleton-title {
@@ -259,16 +214,64 @@
 
 /* Adjust for responsive */
 @media (max-width: 768px) {
+  .hero {
+    height: 65vh;
+    min-height: 450px;
+  }
+
   .hero-content {
       width: 100%;
-      padding: 0 2rem;
+      padding: 0 1.25rem;
+      position: absolute;
+      bottom: 2rem;
+      left: 0;
+      margin-top: 0;
+      text-align: left;
   }
+
   .hero-title {
-      font-size: 3rem;
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      max-width: 90%;
   }
+
   .hero-synopsis {
-      font-size: 1rem;
+      font-size: 0.85rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+      width: 95%;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.3;
   }
+
+  .hero-actions {
+      flex-direction: row; /* Classic row layout if possible, or tight column */
+      gap: 0.6rem;
+      width: fit-content;
+  }
+
+  .hero-btn {
+      padding: 0.5rem 1.2rem;
+      font-size: 0.85rem;
+      min-width: 100px;
+      border-radius: 4px; 
+  }
+
+  .hero-btn.play {
+      background: #ff7200;
+      color: white;
+  }
+
+  .hero-btn.more-info {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+      padding: 0.5rem 1rem;
+  }
+
   .hero-right-controls {
       display: none;
   }

@@ -178,8 +178,17 @@
 }
 
 @media (max-width: 768px) {
+  .person-modal-overlay {
+    padding: 1rem;
+    align-items: flex-start; /* Start from top to allow scroll */
+  }
+
   .person-modal {
     padding: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
   }
 
   .person-modal-header {

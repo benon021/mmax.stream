@@ -1037,10 +1037,23 @@
 }
 
 @media (max-width: 768px) {
+  .modal-overlay {
+    padding-top: 0;
+  }
 
+  .modal-content {
+    width: 100%;
+    border-radius: 0;
+    border: none;
+  }
+
+  .modal-backdrop-wrap {
+    height: 40vh;
+    min-height: 250px;
+  }
 
   .modal-details-center {
-    padding: 2rem 1.5rem;
+    padding: 1.5rem 1.25rem 3rem;
   }
 
   .modal-title {
@@ -1050,6 +1063,75 @@
   .modal-header-flex {
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .modal-meta {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .modal-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.9rem;
+  }
+
+  .modal-btn.secondary {
+    border-radius: 30px;
+  }
+
+  .social-links-premium {
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  .modal-overview {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+  }
+
+  .episodes-section {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+  }
+
+  .episodes-title {
+    font-size: 1.5rem;
+  }
+
+  .related-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  .related-card:hover {
+    transform: translateY(-4px);
+  }
+
+  .related-name {
+    font-size: 0.85rem;
+  }
+
+  .modal-tech-specs {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .tech-item .tech-value {
+    font-size: 0.95rem;
   }
 }
 

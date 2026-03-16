@@ -103,11 +103,26 @@
 
   .footer-logo-block {
     grid-column: 1 / -1;
+    align-items: center;
+    text-align: center;
   }
 }
 
 @media (max-width: 500px) {
+  .site-footer {
+    padding: 3rem 1.5rem 2rem;
+  }
+
   .footer-inner {
     grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .footer-col ul {
+    align-items: center;
+  }
+
+  .footer-logo-text {
+    font-size: 1.5rem;
   }
 }

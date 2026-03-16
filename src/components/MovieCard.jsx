@@ -16,12 +16,23 @@ function MovieCard({ movie, onSelect }) {
   const [videoKey, setVideoKey] = useState(null);
   const [localProgress, setLocalProgress] = useState(null);
   const [hoverBounds, setHoverBounds] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const cardRef = useRef(null);
   const hoverTimer = useRef(null);
   const hoverEnterTimer = useRef(null);
 
   const handleMouseEnter = useCallback(() => {
+    if (isMobile) return;
     if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
@@ -34,13 +45,14 @@ function MovieCard({ movie, onSelect }) {
     }
 
     hoverEnterTimer.current = setTimeout(() => setIsHovered(true), 150);
-  }, []);
+  }, [isMobile]);
 
   const handleMouseLeave = useCallback(() => {
+    if (isMobile) return;
     if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
     setIsHovered(false);
     setHoverBounds(null);
-  }, []);
+  }, [isMobile]);
 
   const favorite = useMemo(() => isFavorite(movie.id), [isFavorite, movie.id]);
   const title =
@@ -86,7 +98,7 @@ function MovieCard({ movie, onSelect }) {
 
   // Keep hover active only while the cursor remains near the base card bounds.
   useEffect(() => {
-    if (!isHovered || !hoverBounds) return;
+    if (!isHovered || !hoverBounds || isMobile) return;
 
     const handleWindowMouseMove = (event) => {
       const padding = 40; // allow some leeway
@@ -105,7 +117,25 @@ function MovieCard({ movie, onSelect }) {
     return () => {
       window.removeEventListener("mousemove", handleWindowMouseMove);
     };
-  }, [isHovered, hoverBounds]);
+  }, [isHovered, hoverBounds, isMobile]);
+
+  // Handle clicking outside on mobile to reset hover
+  useEffect(() => {
+    if (!isHovered || !isMobile) return;
+
+    const handleClickOutside = (e) => {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        setIsHovered(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isHovered, isMobile]);
 
   const onFavoriteClick = useCallback((e) => {
     e.preventDefault();
@@ -114,13 +144,20 @@ function MovieCard({ movie, onSelect }) {
     else addToFavorites(movie);
   }, [favorite, movie, removeFromFavorites, addToFavorites]);
 
-  const handleCardClick = useCallback(() => {
+  const handleCardClick = useCallback((e) => {
+    if (isMobile && !isHovered) {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsHovered(true);
+      return;
+    }
+
     if (onSelect) {
       onSelect(movie);
     } else {
       setShowModal(true);
     }
-  }, [onSelect, movie]);
+  }, [onSelect, movie, isMobile, isHovered]);
 
   // Exact Netflix hover data spoofing
   const votePercent = Math.round((movie.vote_average || 0) * 10);
@@ -166,6 +203,9 @@ function MovieCard({ movie, onSelect }) {
               <span className="r-logo-small">m</span>
             </div>
 
+            {/* HD Badge - Top Right */}
+            <div className="hd-badge">HD</div>
+
             {/* Auto-playing Trailer Container */}
             {isHovered && videoKey && (
               <div className="hover-video-container">
@@ -176,15 +216,21 @@ function MovieCard({ movie, onSelect }) {
                   allow="autoplay; encrypted-media"
                   tabIndex="-1"
                 />
-                {/* Cover YouTube's small watermark logo (can't be removed via URL params) */}
                 <div className="youtube-watermark-blocker" />
-                {/* Gradient over video for title readability */}
                 <div className="video-bottom-gradient"></div>
-                {/* Absoluted title over video bottom - Hide when hovered to avoid duplication */}
                 {!isHovered && <span className="video-title-floating">{title}</span>}
-
               </div>
             )}
+          </div>
+
+          {/* New: Grid Metadata (Visible on mobile/grids where hover is disabled) */}
+          <div className="grid-meta-content">
+            <h3 className="grid-movie-title">{title}</h3>
+            <div className="grid-movie-info">
+              {year && <span>{year}</span>}
+              <span className="dot">•</span>
+              {duration && <span>{duration}</span>}
+            </div>
           </div>
 
           <div className="netflix-hover-content">
@@ -196,7 +242,7 @@ function MovieCard({ movie, onSelect }) {
                 <button
                   className={`nf-btn mylist ${favorite ? "active" : ""}`}
                   onClick={onFavoriteClick}
-                  title={favorite ? "Remove from My List" : "Add to My List"}
+                  title={favorite ? "Remove from Favorites" : "Add to Favorites"}
                 >
                   {favorite ? (
                     <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" /></svg>

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { getTopRatedMovies } from "../services/api";
 import MovieCard from "../components/MovieCard";
+import MovieModal from "../components/MovieModal";
 import "../css/Awards.css";
 
 function Awards() {
   const [awardsContent, setAwardsContent] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
     const fetchAwards = async () => {
@@ -39,7 +41,10 @@ function Awards() {
         {awardsContent.map((movie) => (
           <div key={movie.id} className="award-card-wrap">
              <div className="award-badge-premium">🏆 TOP RATED</div>
-             <MovieCard movie={movie} />
+             <MovieCard 
+              movie={movie} 
+              onSelect={(m) => setSelectedMovie(m)} 
+             />
           </div>
         ))}
       </div>
@@ -49,6 +54,13 @@ function Awards() {
            <div className="golden-spinner"></div>
            POLISHING STATUETTES...
         </div>
+      )}
+
+      {selectedMovie && (
+        <MovieModal
+          movie={selectedMovie}
+          onClose={() => setSelectedMovie(null)}
+        />
       )}
     </div>
   );

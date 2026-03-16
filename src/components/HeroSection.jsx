@@ -197,7 +197,7 @@ function HeroSection() {
         {/* MMAX Series logo */}
         <div className="hero-series-type">
           <span className="brand-logo-small">m</span>
-          <span className="series-text">M A X . S T R E A M</span>
+          <span className="series-text">mmax.stream</span>
         </div>
 
         <h1 className="hero-title">

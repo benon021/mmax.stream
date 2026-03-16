@@ -393,7 +393,83 @@
   }
 }
 
-/* Responsive scaling for smaller devices */
+/* HD Badge */
+.hd-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+}
+
+.grid-meta-content {
+    display: none; /* Hidden by default in rows */
+    padding: 10px 4px;
+    background: transparent;
+}
+
+.grid-movie-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.2px;
+}
+
+.grid-movie-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #999;
+    font-weight: 500;
+}
+
+.search-results-grid .movie-card-wrapper,
+.awards-grid-premium .movie-card-wrapper {
+    width: 100%;
+    height: auto;
+    aspect-ratio: unset;
+}
+
+.search-results-grid .movie-card,
+.awards-grid-premium .movie-card {
+    position: relative;
+    width: 100%;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
+    transform: none !important;
+}
+
+.search-results-grid .movie-poster,
+.awards-grid-premium .movie-poster {
+    aspect-ratio: 2 / 3;
+    height: auto;
+    border-radius: 8px;
+}
+
+.search-results-grid .grid-meta-content,
+.awards-grid-premium .grid-meta-content {
+    display: block;
+}
+
+.search-results-grid .netflix-hover-content,
+.awards-grid-premium .netflix-hover-content {
+    display: none !important;
+}
+
+/* Base hover appearance: keep card compact with full details visible */
 @media (max-width: 768px) {
   .movie-card-wrapper {
     width: 12rem;
@@ -404,26 +480,25 @@
     width: 12rem;
     height: 7rem;
   }
-
-  /* Avoid hover expansion on touch devices where it can feel clunky */
-  .movie-card-wrapper.is-hovered {
-    transform: none;
-    z-index: 1;
+  
+  /* Redefine grid card behavior for mobile specifically */
+  .search-results-grid .movie-card-wrapper,
+  .awards-grid-premium .movie-card-wrapper {
+    width: 100%;
+    height: auto;
+  }
+  
+  .search-results-grid .movie-card,
+  .awards-grid-premium .movie-card {
+    width: 100%;
+    height: auto;
   }
 
   .movie-card-wrapper.is-hovered .movie-card {
-    height: 7rem;
-    width: 12rem;
+    height: auto;
+    width: 100%;
     transform: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
-  }
-
-  .hover-meta-row {
-    font-size: 0.45rem;
-  }
-
-  .episode-title {
-    font-size: 0.9rem;
+    box-shadow: none;
   }
 }
 

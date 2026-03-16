@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 
 :root {
   --primary: #000000;
@@ -12,11 +12,22 @@
   --text-secondary: #cccccc;
   --bg-light: #0d0d0d;
   --bg-card: #141414;
-  --border: #222222;
+  --border: rgba(255, 255, 255, 0.1);
   --rating-good: #ff7200;
   --rating-mid: #d2d531;
   --rating-bad: #db2360;
   --navbar-height: 72px;
+}
+
+html, body {
+  overflow-x: hidden;
+  font-family: 'Inter', sans-serif;
+  background-color: #050505;
+  color: white;
+}
+
+h1, h2, h3, h4, .logo-m, .loader-m {
+  font-family: 'Outfit', sans-serif;
 }
 
 

@@ -33,7 +33,10 @@ const SOURCES = [
   }
 ];
 
+import { useMovieContext } from "../contexts/MovieContext";
+
 function MovieModal({ movie, onClose }) {
+  const { isFavorite, addToFavorites, removeFromFavorites } = useMovieContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [lightsOff, setLightsOff] = useState(false);
@@ -346,7 +349,7 @@ function MovieModal({ movie, onClose }) {
             <span className="modal-year">{year}</span>
             <span className="modal-rating-pill">{votePercent}% Match</span>
             <span className="modal-maturity-dynamic">{getRating()}</span>
-            <span className="modal-quality">ULTRA HD 4K</span>
+            <span className="modal-quality">4K</span>
           </div>
 
           <div className="modal-actions">
@@ -354,7 +357,12 @@ function MovieModal({ movie, onClose }) {
               <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M6 4l15 8-15 8V4z" /></svg>
               WATCH NOW
             </button>
-            <button className="modal-btn secondary glass-btn">＋ MY LIST</button>
+            <button 
+              className={`modal-btn secondary glass-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
+              onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}
+            >
+              {isFavorite(currentMovie.id) ? "✓ FAVORITES" : "＋ FAVORITES"}
+            </button>
             <div className="social-links-premium">
               {fullDetails?.external_ids?.instagram_id && (
                 <a href={`https://instagram.com/${fullDetails.external_ids.instagram_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="Instagram">
