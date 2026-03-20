@@ -558,10 +558,13 @@
   }
 
   /* Hamburger Styles */
-  .hamburger {
+   .hamburger {
+    position: fixed;
+    top: 15px;
+    right: 30px;
+
     display: flex;
     padding: 10px;
-    margin-right: -10px;
     cursor: pointer;
     background: transparent;
     border: none;
