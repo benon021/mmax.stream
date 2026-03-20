@@ -3,7 +3,8 @@
 :root {
   --primary: #000000;
   --primary-light: #111111;
-  --accent: #ff7200; /* MMax.Stream Orange */
+  --accent: #ff7200;
+  /* MMax.Stream Orange */
   --accent-secondary: #ff8c33;
   --accent-dark: #cc5b00;
   --text-light: #ffffff;
@@ -19,14 +20,20 @@
   --navbar-height: 72px;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden;
   font-family: 'Inter', sans-serif;
   background-color: #050505;
   color: white;
 }
 
-h1, h2, h3, h4, .logo-m, .loader-m {
+h1,
+h2,
+h3,
+h4,
+.logo-m,
+.loader-m {
   font-family: 'Outfit', sans-serif;
 }
 
@@ -37,7 +44,8 @@ h1, h2, h3, h4, .logo-m, .loader-m {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   overflow-x: hidden;
   font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
   background-color: #0d0d0d;
@@ -78,9 +86,11 @@ img {
   height: 4px;
   width: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: transparent;
   border-radius: 10px;
@@ -116,4 +126,3 @@ body:hover::-webkit-scrollbar-thumb {
     font-size: 13px;
   }
 }
-

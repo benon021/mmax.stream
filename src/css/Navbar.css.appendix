@@ -1,0 +1,21 @@
+/* ── Enhanced Desktop (Web View) ─────────────────────── */
+@media (min-width: 1024px) {
+  .navbar {
+    padding: 0 6rem;
+    gap: 3rem;
+  }
+
+  .navbar-links {
+    gap: 2rem;
+  }
+
+  .nav-link {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.92rem;
+  }
+
+  .navbar-actions {
+    gap: 1.2rem;
+  }
+}
+

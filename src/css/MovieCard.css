@@ -411,19 +411,17 @@
 
 .grid-meta-content {
     display: none; /* Hidden by default in rows */
-    padding: 10px 4px;
-    background: transparent;
+    padding: 8px 0;
 }
 
 .grid-movie-title {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 700;
     color: #fff;
-    margin: 0 0 4px;
+    margin: 4px 0 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: -0.2px;
 }
 
 .grid-movie-info {
@@ -431,8 +429,7 @@
     align-items: center;
     gap: 6px;
     font-size: 0.75rem;
-    color: #999;
-    font-weight: 500;
+    color: #888;
 }
 
 .search-results-grid .movie-card-wrapper,

@@ -25,11 +25,13 @@
   border: 1.5px solid #ff7200;
   border-radius: 30px;
   overflow-x: auto;
-  scrollbar-width: none; /* Hide scrollbar Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar Firefox */
 }
 
 .tab-filters::-webkit-scrollbar {
-  display: none; /* Hide scrollbar Chrome/Safari */
+  display: none;
+  /* Hide scrollbar Chrome/Safari */
 }
 
 .tab-filter-btn {
@@ -50,7 +52,7 @@
 }
 
 .tab-filter-btn:hover:not(.active) {
-  background: rgba(3,37,65,0.08);
+  background: rgba(3, 37, 65, 0.08);
 }
 
 /* Horizontal scroll */
@@ -58,7 +60,7 @@
   display: flex;
   gap: 1.25rem;
   overflow-x: auto;
-  
+
   /* Trick to allow hover breakout without clipping */
   padding-top: 12rem;
   padding-bottom: 12rem;
@@ -66,16 +68,17 @@
   margin-bottom: -12rem;
   padding-left: 4rem;
   padding-right: 4rem;
-  
+
   /* IMPORTANT: Allow scroll-through on invisible padding */
-  pointer-events: none; 
-  
+  pointer-events: none;
+
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
 }
 
-.movie-row-scroll > * {
-  pointer-events: auto; /* Re-enable for the actual cards */
+.movie-row-scroll>* {
+  pointer-events: auto;
+  /* Re-enable for the actual cards */
 }
 
 .movie-row-scroll::-webkit-scrollbar {
@@ -108,8 +111,13 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 /* Divider */

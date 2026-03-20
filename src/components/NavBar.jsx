@@ -98,26 +98,24 @@ function NavBar({ onSearch, isScrolled }) {
 
   const isActive = (path) => path && location.pathname === path;
 
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") setSearchOpen(false);
+    };
+    if (searchOpen) {
+      document.addEventListener("keydown", handleEsc);
+    }
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [searchOpen]);
+
   const handleLinkClick = () => {
-    setMobileMenuOpen(false);
-    setExpandedSection(null);
     setSearchOpen(false);
+    setMobileMenuOpen(false);
   };
 
   const toggleSection = (label) => {
     setExpandedSection(expandedSection === label ? null : label);
   };
-
-  useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [mobileMenuOpen]);
 
   return (
     <>
@@ -144,35 +142,7 @@ function NavBar({ onSearch, isScrolled }) {
         {/* ── Mobile Nav Overlay ── */}
         <div className={`navbar-links ${mobileMenuOpen ? "mobile-open" : ""}`}>
           <div className="mobile-menu-scroll">
-            {/* Logo in Menu */}
-            <div className="mobile-menu-branding">
-              <span className="mmax-logo-combined">
-                <span className="logo-m">m</span>
-                <span className="logo-text">max.stream</span>
-              </span>
-            </div>
-
-            {/* Search in Menu */}
-            <div className="mobile-menu-search">
-              <form onSubmit={handleSubmit} className="mobile-search-form">
-                <input
-                  type="text"
-                  placeholder="Search movies, tv, people..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="mobile-search-input"
-                />
-                <button type="submit" className="mobile-search-btn">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                </button>
-              </form>
-            </div>
-
-            <div className="mobile-links-container">
-              {NAV_LINKS.map((item) => {
+            {NAV_LINKS.map((item) => {
               const hasSub = item.subItems && item.subItems.length > 0;
               const isSectionExpanded = expandedSection === item.label;
 
@@ -224,9 +194,8 @@ function NavBar({ onSearch, isScrolled }) {
             })}
           </div>
         </div>
-      </div>
 
-      {/* ── Right Actions ── */}
+        {/* ── Right Actions ── */}
         <div className="navbar-actions">
           <button className="nav-action-btn" title="Add content">＋</button>
           <span className="lang-pill">EN</span>
@@ -246,13 +215,7 @@ function NavBar({ onSearch, isScrolled }) {
       {/* ── Search Overlay ── */}
       {searchOpen && (
         <div className="search-overlay" onClick={() => setSearchOpen(false)}>
-          <div className="search-container" onClick={(e) => e.stopPropagation()}>
-            <div className="search-logo-wrapper">
-              <span className="navbar-logo">
-                <span className="logo-m">m</span>
-                <span className="logo-text">max.stream</span>
-              </span>
-            </div>
+          <div className="search-container">
             <form
               className="floating-search-bar"
               onSubmit={handleSubmit}

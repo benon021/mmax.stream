@@ -3,21 +3,36 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.85);
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* Mobile: bottom sheet */
   justify-content: center;
-  padding: 2rem;
   z-index: 5000;
   overflow: auto;
 }
 
+@media (min-width: 640px) {
+  .person-modal-overlay {
+    align-items: center;
+    padding: 2rem;
+  }
+}
+
 .person-modal {
   width: min(960px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
   background: rgba(15, 15, 15, 0.98);
-  border-radius: 14px;
+  border-radius: 14px 14px 0 0; /* Mobile: flat bottom */
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
   position: relative;
   padding: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .person-modal {
+    border-radius: 14px;
+    max-height: 80vh;
+  }
 }
 
 .person-modal-close {
@@ -27,8 +42,8 @@
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #fff;
-  width: 38px;
-  height: 38px;
+  width: 44px; /* WCAG tap target */
+  height: 44px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -36,6 +51,7 @@
   justify-content: center;
   font-size: 1.1rem;
   transition: background 0.2s;
+  z-index: 10;
 }
 
 .person-modal-close:hover {
@@ -129,7 +145,13 @@
 .credits-grid {
   display: grid;
   gap: 1rem;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(2, 1fr); /* Mobile: 2 columns */
+}
+
+@media (min-width: 640px) {
+  .credits-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
 }
 
 .credit-card {
@@ -177,18 +199,10 @@
   margin-top: auto;
 }
 
-@media (max-width: 768px) {
-  .person-modal-overlay {
-    padding: 1rem;
-    align-items: flex-start; /* Start from top to allow scroll */
-  }
-
+/* Responsive handled above with mobile-first approach */
+@media (max-width: 640px) {
   .person-modal {
     padding: 1rem;
-    max-height: 90vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
   }
 
   .person-modal-header {
@@ -198,7 +212,7 @@
   }
 
   .person-modal-poster {
-    width: 160px;
+    width: 140px;
   }
 
   .person-modal-info {
@@ -211,9 +225,5 @@
 
   .person-meta {
     font-size: 0.9rem;
-  }
-
-  .credits-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }

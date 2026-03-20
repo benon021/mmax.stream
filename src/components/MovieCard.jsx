@@ -16,23 +16,12 @@ function MovieCard({ movie, onSelect }) {
   const [videoKey, setVideoKey] = useState(null);
   const [localProgress, setLocalProgress] = useState(null);
   const [hoverBounds, setHoverBounds] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768 || 'ontouchstart' in window);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   const cardRef = useRef(null);
   const hoverTimer = useRef(null);
   const hoverEnterTimer = useRef(null);
 
   const handleMouseEnter = useCallback(() => {
-    if (isMobile) return;
     if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
@@ -45,14 +34,13 @@ function MovieCard({ movie, onSelect }) {
     }
 
     hoverEnterTimer.current = setTimeout(() => setIsHovered(true), 150);
-  }, [isMobile]);
+  }, []);
 
   const handleMouseLeave = useCallback(() => {
-    if (isMobile) return;
     if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
     setIsHovered(false);
     setHoverBounds(null);
-  }, [isMobile]);
+  }, []);
 
   const favorite = useMemo(() => isFavorite(movie.id), [isFavorite, movie.id]);
   const title =
@@ -98,7 +86,7 @@ function MovieCard({ movie, onSelect }) {
 
   // Keep hover active only while the cursor remains near the base card bounds.
   useEffect(() => {
-    if (!isHovered || !hoverBounds || isMobile) return;
+    if (!isHovered || !hoverBounds) return;
 
     const handleWindowMouseMove = (event) => {
       const padding = 40; // allow some leeway
@@ -117,25 +105,7 @@ function MovieCard({ movie, onSelect }) {
     return () => {
       window.removeEventListener("mousemove", handleWindowMouseMove);
     };
-  }, [isHovered, hoverBounds, isMobile]);
-
-  // Handle clicking outside on mobile to reset hover
-  useEffect(() => {
-    if (!isHovered || !isMobile) return;
-
-    const handleClickOutside = (e) => {
-      if (cardRef.current && !cardRef.current.contains(e.target)) {
-        setIsHovered(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [isHovered, isMobile]);
+  }, [isHovered, hoverBounds]);
 
   const onFavoriteClick = useCallback((e) => {
     e.preventDefault();
@@ -144,20 +114,13 @@ function MovieCard({ movie, onSelect }) {
     else addToFavorites(movie);
   }, [favorite, movie, removeFromFavorites, addToFavorites]);
 
-  const handleCardClick = useCallback((e) => {
-    if (isMobile && !isHovered) {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsHovered(true);
-      return;
-    }
-
+  const handleCardClick = useCallback(() => {
     if (onSelect) {
       onSelect(movie);
     } else {
       setShowModal(true);
     }
-  }, [onSelect, movie, isMobile, isHovered]);
+  }, [onSelect, movie]);
 
   // Exact Netflix hover data spoofing
   const votePercent = Math.round((movie.vote_average || 0) * 10);

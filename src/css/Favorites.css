@@ -1,6 +1,6 @@
 /* ── Favorites Page ─────────────────────────────────── */
 .favorites-page {
-  padding: 2rem;
+  padding: calc(var(--navbar-height) + 2rem) clamp(1rem, 5vw, 4rem) 4rem;
   background: var(--bg-light);
   min-height: 60vh;
 }
@@ -16,8 +16,22 @@
 
 .movies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr); /* Mobile: 2 columns */
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
 }
 
 /* Empty state */
@@ -64,8 +78,13 @@
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   transition: opacity 0.2s;
+  min-height: 44px; /* WCAG tap target */
+  width: 100%;
+  max-width: 240px;
 }
 
 .browse-btn:hover {

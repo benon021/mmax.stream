@@ -1,5 +1,5 @@
 .awards-page {
-    padding: 100px 4rem 4rem;
+    padding: calc(var(--navbar-height) + 2rem) clamp(1rem, 5vw, 4rem) 4rem;
     min-height: 100vh;
     background: radial-gradient(circle at top, #1a1a1a 0%, #0d0d0d 100%);
 }
@@ -21,7 +21,7 @@
 }
 
 .awards-title-premium {
-    font-size: 4rem;
+    font-size: clamp(2rem, 8vw, 4rem);
     font-weight: 900;
     color: #fff;
     text-transform: uppercase;
@@ -32,7 +32,7 @@
 
 .awards-subtitle {
     color: #ff7200;
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 3vw, 1.2rem);
     max-width: 600px;
     margin: 0 auto 2rem;
     font-weight: 600;
@@ -49,8 +49,22 @@
 
 .awards-grid-premium {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 3rem;
+    grid-template-columns: repeat(2, 1fr); /* Mobile: 2 columns */
+    gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .awards-grid-premium {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .awards-grid-premium {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 3rem;
+    }
 }
 
 .award-card-wrap {
@@ -103,18 +117,10 @@
     to { transform: rotate(360deg); }
 }
 
-@media (max-width: 768px) {
+/* Mobile overrides retained for smaller screens */
+@media (max-width: 480px) {
     .awards-page {
-        padding: 70px 0.75rem 2rem;
-    }
-    .awards-title-premium {
-        font-size: 1.8rem;
-    }
-    .awards-grid-premium {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.75rem;
-    }
-    .award-card-wrap {
-        width: 100%;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 }
