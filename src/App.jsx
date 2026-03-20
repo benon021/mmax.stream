@@ -9,6 +9,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import { MovieProvider } from "./contexts/MovieContext";
 import NavBar from "./components/NavBar";
 import Footer from "./components/Footer";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 function App() {
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <SpeedInsights />
       </div>
     </MovieProvider>
   );
