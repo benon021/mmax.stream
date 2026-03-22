@@ -1,0 +1,168 @@
+.people-page {
+    padding: calc(var(--navbar-height) + 2rem) clamp(1rem, 5vw, 4rem) 4rem;
+    min-height: 100vh;
+    background: #0d0d0d;
+}
+
+.people-header-banner {
+    margin-bottom: 4rem;
+    text-align: center;
+}
+
+.people-title-premium {
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #fff, #ff7200);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.people-subtitle {
+    color: #888;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+}
+
+.people-grid-premium {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Mobile first: 2 col */
+    gap: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .people-grid-premium {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 2rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .people-grid-premium {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 2.5rem;
+    }
+}
+
+.person-card-liquid {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 114, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.person-card-liquid:hover {
+    transform: translateY(-12px) scale(1.02);
+    border-color: #ff7200;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 114, 0, 0.2);
+}
+
+.person-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+}
+
+.person-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.person-card-liquid:hover .person-img-wrap img {
+    transform: scale(1.1);
+}
+
+.person-info-liquid {
+    padding: 1.5rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transition: all 0.3s ease;
+}
+
+.person-card-liquid:hover .person-info-liquid {
+    padding-bottom: 2rem;
+}
+
+.person-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.3rem;
+}
+
+.person-known-for {
+    font-size: 0.85rem;
+    color: #ff7200;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.person-card-glow {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, rgba(255, 114, 0, 0.15), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.person-card-liquid:hover .person-card-glow {
+    opacity: 1;
+}
+
+.people-loading-liquid {
+    text-align: center;
+    padding: 4rem;
+    color: #ff7200;
+    font-weight: 900;
+    letter-spacing: 0.5rem;
+    font-size: 1.2rem;
+    animation: pulseGlow 1.5s infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.4; transform: scale(0.98); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+.load-more-people-btn {
+    display: block;
+    margin: 4rem auto 0;
+    background: transparent;
+    border: 1px solid #ff7200;
+    color: #ff7200;
+    padding: 1rem 3rem;
+    font-weight: 800;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 2px;
+    min-height: 44px; /* WCAG tap target */
+    width: 100%;
+    max-width: 300px;
+}
+
+.load-more-people-btn:hover {
+    background: #ff7200;
+    color: #000;
+    box-shadow: 0 0 30px rgba(255, 114, 0, 0.4);
+}
+
+/* Preserved overrides */
+@media (max-width: 480px) {
+    .people-page {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}

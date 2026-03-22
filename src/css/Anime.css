@@ -1,0 +1,33 @@
+.anime-page {
+  padding-top: var(--nav-height);
+  min-height: 100vh;
+  background-color: #050505;
+}
+
+.anime-header {
+  padding: 4rem 5% 2rem;
+  text-align: center;
+  background: linear-gradient(to bottom, rgba(255, 114, 0, 0.05) 0%, transparent 100%);
+}
+
+.anime-header h1 {
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #fff 0%, #aaa 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.anime-header p {
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .anime-header h1 { font-size: 2.5rem; }
+  .anime-header p { font-size: 1rem; }
+}

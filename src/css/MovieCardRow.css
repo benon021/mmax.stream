@@ -1,0 +1,316 @@
+/* ── Netflix Hover CSS for Rows ──────────────────────── */
+.variant-row.movie-card-wrapper {
+  width: 15rem;
+  height: 8.5rem;
+}
+
+.variant-row .movie-card {
+  width: 15rem;
+  height: 8.5rem;
+}
+
+/* Base hover appearance: keep card compact with full details visible */
+.variant-row.movie-card-wrapper.is-hovered {
+  z-index: 50;
+}
+
+.variant-row.movie-card-wrapper.is-hovered .movie-card {
+  height: 22.5rem;
+  width: 15rem;
+  min-height: 22.5rem;
+  transform: translateY(-1rem) scale(1.1);
+  transform-origin: top center;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.75), 0 10px 18px rgba(0, 0, 0, 0.65);
+  z-index: 51;
+}
+
+.variant-row.movie-card-wrapper:hover {
+  z-index: 60;
+}
+
+/* Movie Poster Image */
+.variant-row .movie-poster {
+  height: 8.5rem;
+}
+
+/* In hover state, poster pushes up, making room for content */
+.variant-row.movie-card-wrapper.is-hovered .movie-poster {
+  height: 11.5rem;
+  border-radius: 4px 4px 0 0;
+}
+
+.variant-row.movie-card-wrapper.is-hovered .movie-poster img {
+  filter: brightness(1.1);
+}
+
+/* Hover Video Player */
+.variant-row .hover-video-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+.variant-row .hover-video-container iframe {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Hide YouTube watermark / logo */
+.variant-row .youtube-watermark-blocker {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 38px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 3px;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.variant-row .video-bottom-gradient {
+  position: absolute;
+  bottom: 0px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: linear-gradient(to top, #141414 0%, transparent 100%);
+  z-index: 3;
+}
+
+.variant-row .video-title-floating {
+  position: absolute;
+  bottom: 6px;
+  left: 10px;
+  z-index: 4;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+  letter-spacing: -0.5px;
+  text-transform: lowercase;
+}
+
+/* Lower Hover Details */
+.variant-row .netflix-hover-content {
+  position: relative;
+  height: auto;
+  min-height: 8rem;
+  background: #141414;
+  padding: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 0.45rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  overflow: hidden;
+}
+
+.variant-row.movie-card-wrapper.is-hovered .netflix-hover-content {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Action Buttons Row */
+.variant-row .hover-actions-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.variant-row .left-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.variant-row .nf-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(42, 42, 42, 0.6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.variant-row .nf-btn:hover {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.variant-row .nf-btn.play {
+  background: white;
+  color: black;
+  border: none;
+}
+
+.variant-row .nf-btn.play:hover {
+  background: #e6e6e6;
+  transform: scale(1.1);
+}
+
+/* Metadata Row */
+.variant-row .hover-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.55rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #fff;
+}
+
+.variant-row .nf-year {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.variant-row .nf-match-score {
+  color: #FFD700;
+}
+
+.variant-row .nf-maturity-badge {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: #000;
+  padding: 0 4px;
+}
+
+.variant-row .nf-maturity-badge.age-18 {
+  background: #FFD700;
+  color: black;
+  border: none;
+}
+
+.variant-row .nf-duration {
+  font-weight: 400;
+}
+
+.variant-row .nf-hd-badge {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+  padding: 0 3px;
+  font-weight: 400;
+  font-size: 0.55rem;
+}
+
+/* TV Episode Continuation Data */
+.variant-row .hover-episode-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.variant-row .episode-title {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.2rem;
+}
+
+.variant-row .progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.variant-row .progress-bar {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.variant-row .progress-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Genre Tags */
+.variant-row .hover-tags-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.55rem;
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.variant-row .dot {
+  color: #6d6d6e;
+}
+
+/* Mobile Adjustments for Row specifically */
+@media (max-width: 768px) {
+  .variant-row.movie-card-wrapper {
+    width: 12rem;
+    height: 7rem;
+  }
+
+  .variant-row .movie-card {
+    width: 12rem;
+    height: 7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .variant-row.movie-card-wrapper {
+    width: 10.5rem;
+    height: 6rem;
+  }
+
+  .variant-row .movie-card {
+    width: 10.5rem;
+    height: 6rem;
+  }
+
+  .variant-row.movie-card-wrapper.is-hovered {
+    transform: none;
+    z-index: 1;
+  }
+
+  .variant-row.movie-card-wrapper.is-hovered .movie-card {
+    height: 6rem;
+    width: 10.5rem;
+    transform: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+  }
+
+  .variant-row .hover-meta-row {
+    font-size: 0.4rem;
+  }
+
+  .variant-row .hover-tags-row {
+    font-size: 0.45rem;
+  }
+}

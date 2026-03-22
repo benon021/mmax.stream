@@ -1,0 +1,166 @@
+/* ── Movie Row ──────────────────────────────────────── */
+.movie-row-section {
+  padding: 2rem 2rem 1rem;
+  background: var(--bg-light);
+}
+
+.movie-row-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.movie-row-header h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #ff7200;
+  white-space: nowrap;
+}
+
+/* Tab filter pills */
+.tab-filters {
+  display: flex;
+  border: 1.5px solid #ff7200;
+  border-radius: 30px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* Hide scrollbar Firefox */
+}
+
+.tab-filters::-webkit-scrollbar {
+  display: none;
+  /* Hide scrollbar Chrome/Safari */
+}
+
+.tab-filter-btn {
+  background: transparent;
+  border: none;
+  padding: 0.3rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #ff7200;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.tab-filter-btn.active {
+  background: #ff7200;
+  color: white;
+}
+
+.tab-filter-btn:hover:not(.active) {
+  background: rgba(3, 37, 65, 0.08);
+}
+
+/* Horizontal scroll */
+.movie-row-scroll {
+  display: flex;
+  gap: 1.25rem;
+  overflow-x: auto;
+
+  /* Refined padding for scale hover */
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+  margin-top: -2rem;
+  margin-bottom: -2rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+
+  /* IMPORTANT: Allow scroll-through on invisible padding */
+  pointer-events: none;
+
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.movie-row-scroll>* {
+  pointer-events: auto;
+  /* Re-enable for the actual cards */
+}
+
+.movie-row-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.movie-row-scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+/* Loading skeleton */
+.skeleton-card {
+  flex-shrink: 0;
+  width: 11.5rem;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeleton-poster {
+  aspect-ratio: 2/3;
+  border-radius: 8px;
+}
+
+.skeleton-info {
+  display: none;
+  /* Portrait cards usually rely on overlay or basic grid meta */
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Divider */
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0 2rem;
+}
+
+@media (max-width: 768px) {
+  .movie-row-section {
+    padding: 1.25rem 1rem 0.75rem;
+  }
+
+  .movie-row-scroll {
+    padding-top: 2.5rem;
+    padding-bottom: 2.5rem;
+    margin-top: -2.5rem;
+    margin-bottom: -2.5rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .section-divider {
+    margin: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-row-section {
+    padding: 1rem 0.75rem 0.5rem;
+  }
+
+  .movie-row-scroll {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    margin-top: -2rem;
+    margin-bottom: -2rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .section-divider {
+    margin: 0 0.75rem;
+  }
+}

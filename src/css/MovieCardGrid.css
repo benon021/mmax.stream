@@ -1,0 +1,83 @@
+/* ── Grid CSS for Search, Awards, Favorites ──────────────────────── */
+.variant-grid.movie-card-wrapper {
+  width: 100%;
+  height: auto;
+  aspect-ratio: unset;
+  min-width: 0; /* CRITICAL: prevents CSS grid child blowout from intrinsic image sizes */
+}
+
+.variant-grid .movie-card {
+  position: relative;
+  width: 100%;
+  height: auto;
+  background: transparent;
+  box-shadow: none;
+  transform: none !important;
+}
+
+.variant-grid .movie-poster {
+  aspect-ratio: 2 / 3;
+  height: auto;
+  border-radius: 8px;
+}
+
+.variant-grid .movie-poster img {
+  border-radius: 8px;
+}
+
+.variant-grid .grid-meta-content {
+  display: block;
+}
+
+.variant-grid .netflix-hover-content {
+  display: none !important;
+}
+
+/* Hover effects for grid cards */
+.variant-grid.movie-card-wrapper:hover .movie-poster {
+  transform: scale(1.03); /* Slight scale */
+  box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+  z-index: 2;
+}
+
+.variant-grid.movie-card-wrapper.is-hovered .movie-card {
+  height: auto;
+  width: 100%;
+  transform: none;
+  box-shadow: none;
+}
+
+.variant-grid .persistent-progress-container {
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+}
+
+/* Ensure grids themselves are responsive if parent containers missing it */
+@media (max-width: 1024px) {
+  .search-results-grid, .awards-grid-premium, .movies-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .search-results-grid, .awards-grid-premium, .movies-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-results-grid, .awards-grid-premium, .movies-grid {
+    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns on small phones to reduce card sizes */
+    gap: 0.4rem;
+  }
+  
+  .variant-grid .grid-movie-title {
+    font-size: 0.7rem;
+  }
+  .variant-grid .grid-movie-info {
+    font-size: 0.6rem;
+  }
+}
+
