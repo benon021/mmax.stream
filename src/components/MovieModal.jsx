@@ -286,7 +286,6 @@ function MovieModal({ movie, onClose }) {
                   allowFullScreen
                   frameBorder="0"
                   onLoad={() => setIsVideoLoading(false)}
-                  sandbox="allow-scripts allow-same-origin allow-forms"
                 ></iframe>
               </div>
 
