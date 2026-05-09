@@ -21,8 +21,8 @@ import "../css/Home.css";
 
 // Tab configs — defined outside component so references are stable
 const trendingTabs = [
-  { label: "Today", fetchFn: () => getTrendingAll("day") },
-  { label: "This Week", fetchFn: () => getTrendingAll("week") },
+  { label: "Today", fetchFn: (page) => getTrendingAll("day", page) },
+  { label: "This Week", fetchFn: (page) => getTrendingAll("week", page) },
 ];
 
 const popularTabs = [
@@ -48,6 +48,15 @@ function Home() {
   const [searchError, setSearchError] = useState(null);
   const [lastQuery, setLastQuery] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
+  const [activeSection, setActiveSection] = useState("Trending");
+
+  const sections = [
+    { id: "Continue Watching", label: "Continue Watching" },
+    { id: "Trending", label: "Trending" },
+    { id: "What's Popular", label: "What's Popular" },
+    { id: "Free To Watch", label: "Free To Watch" },
+    { id: "Top Rated", label: "Top Rated" },
+  ];
 
   const handleSearch = useCallback(async (query) => {
     if (!query) {
@@ -126,19 +135,39 @@ function Home() {
       {/* Sections (hidden during search) */}
       {searchResults === null && (
         <>
-          <MovieRow title="Continue Watching" tabs={continueWatchingTabs} />
-          <div className="section-divider" />
-          <MovieRow title="Trending" tabs={trendingTabs} />
+          <div className="top-sections-tabs">
+            {sections.map((section) => (
+              <button
+                key={section.id}
+                className={`section-tab-btn ${activeSection === section.id ? "active" : ""}`}
+                onClick={() => setActiveSection(section.id)}
+              >
+                {section.label}
+              </button>
+            ))}
+          </div>
 
-          <div className="section-divider" />
-          <MovieRow title="What's Popular" tabs={popularTabs} />
-          <div className="section-divider" />
-          <MovieRow title="Free To Watch" tabs={freeTabs} />
-          <div className="section-divider" />
-          <MovieRow
-            title="Top Rated"
-            tabs={[{ label: "Movies", fetchFn: getTopRatedMovies }]}
-          />
+          <div className="section-content">
+            {activeSection === "Continue Watching" && (
+              <MovieRow title="Continue Watching" tabs={continueWatchingTabs} layout="grid" />
+            )}
+            {activeSection === "Trending" && (
+              <MovieRow title="Trending" tabs={trendingTabs} layout="grid" />
+            )}
+            {activeSection === "What's Popular" && (
+              <MovieRow title="What's Popular" tabs={popularTabs} layout="grid" />
+            )}
+            {activeSection === "Free To Watch" && (
+              <MovieRow title="Free To Watch" tabs={freeTabs} layout="grid" />
+            )}
+            {activeSection === "Top Rated" && (
+              <MovieRow
+                title="Top Rated"
+                tabs={[{ label: "Movies", fetchFn: getTopRatedMovies }]}
+                layout="grid"
+              />
+            )}
+          </div>
         </>
       )}
     </div>

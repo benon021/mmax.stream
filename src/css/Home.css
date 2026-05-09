@@ -52,3 +52,42 @@
   color: var(--text-muted);
   font-size: 1rem;
 }
+
+/* ── Top Sections Tabs ─────────────────────────────────── */
+.top-sections-tabs {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.5rem 2rem 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.top-sections-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.section-tab-btn {
+  background: transparent;
+  border: 1.5px solid #ff7200;
+  border-radius: 30px;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ff7200;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.section-tab-btn.active {
+  background: #ff7200;
+  color: white;
+}
+
+.section-tab-btn:hover:not(.active) {
+  background: rgba(255, 114, 0, 0.1);
+}
+
+.section-content {
+  margin-top: 0.5rem;
+}

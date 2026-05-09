@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import "../css/MovieModal.css";
 import { getSeasonDetails, getMovieDetails, getSimilarContent } from "../services/api";
 import { getProgress, saveProgress } from "../services/progress";
@@ -69,7 +70,7 @@ function MovieModal({ movie, onClose }) {
   const containerRef = useRef(null);
   const iframeRef = useRef(null);
 
-  const isTV = currentMovie.media_type === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
+  const isTV = currentMovie.media_type === "tv" || currentMovie.mediaType === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
   const isAnime = isTV && (currentMovie.genre_ids?.includes(16) || currentMovie.original_language === "ja");
   const mediaType = isTV ? "tv" : "movie";
   
@@ -260,7 +261,7 @@ function MovieModal({ movie, onClose }) {
   const videoUrl = currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
 
 
-  return (
+  return createPortal(
     <div className={`modal-overlay ${lightsOff ? "lights-off-active" : ""}`} onClick={onClose}>
       <div
         className={`modal-content ${isTheaterMode ? "theater-mode" : ""} ${isPlaying ? "playing" : ""}`}
@@ -441,7 +442,7 @@ function MovieModal({ movie, onClose }) {
             )}
 
             <button 
-              className={`modal-btn secondary glass-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
+              className={`modal-btn secondary ${isFavorite(currentMovie.id) ? "active" : ""}`}
               onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}
             >
               {isFavorite(currentMovie.id) ? "✓ FAVORITES" : "＋ FAVORITES"}
@@ -631,7 +632,8 @@ function MovieModal({ movie, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

@@ -193,6 +193,9 @@ function HeroSection() {
             alt={currentMovie.title}
             className="hero-image fallback"
           />
+          
+          {/* Clickable overlay to open movie modal */}
+          <div className="hero-click-overlay" onClick={() => setSelectedMovie(currentMovie)}></div>
         </div>
       </div>
 

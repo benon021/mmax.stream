@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import "../css/PersonModal.css";
 import { getPersonDetails } from "../services/api";
 
@@ -30,7 +31,7 @@ function PersonModal({ personId, onClose }) {
     ? `https://image.tmdb.org/t/p/w500${person.profile_path}`
     : "https://via.placeholder.com/420x630?text=No+Photo";
 
-  return (
+  return createPortal(
     <div className="person-modal-overlay" onClick={onClose}>
       <div className="person-modal" onClick={(e) => e.stopPropagation()}>
         <button className="person-modal-close" onClick={onClose}>
@@ -129,7 +130,8 @@ function PersonModal({ personId, onClose }) {
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

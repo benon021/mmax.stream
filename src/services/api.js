@@ -2,8 +2,8 @@ const API_KEY = "3c0c9ed9dc5ae2163e62aa7f288fa6de";
 const BASE_URL = "https://api.themoviedb.org/3";
 
 // ── Movies ──────────────────────────────────────────────
-export const getPopularMovies = async () => {
-  const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US`);
+export const getPopularMovies = async (page = 1) => {
+  const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${page}`);
   const data = await res.json();
   return data.results;
 };
@@ -17,27 +17,27 @@ export const searchMovies = async (query) => {
 };
 
 // ── Trending ─────────────────────────────────────────────
-export const getTrendingMovies = async (timeWindow = "day") => {
-  const res = await fetch(`${BASE_URL}/trending/movie/${timeWindow}?api_key=${API_KEY}&language=en-US`);
+export const getTrendingMovies = async (timeWindow = "day", page = 1) => {
+  const res = await fetch(`${BASE_URL}/trending/movie/${timeWindow}?api_key=${API_KEY}&language=en-US&page=${page}`);
   const data = await res.json();
   return data.results;
 };
 
-export const getTrendingTV = async (timeWindow = "day") => {
-  const res = await fetch(`${BASE_URL}/trending/tv/${timeWindow}?api_key=${API_KEY}`);
+export const getTrendingTV = async (timeWindow = "day", page = 1) => {
+  const res = await fetch(`${BASE_URL}/trending/tv/${timeWindow}?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
   return data.results;
 };
 
-export const getTrendingAll = async (timeWindow = "day") => {
-  const res = await fetch(`${BASE_URL}/trending/all/${timeWindow}?api_key=${API_KEY}&language=en-US`);
+export const getTrendingAll = async (timeWindow = "day", page = 1) => {
+  const res = await fetch(`${BASE_URL}/trending/all/${timeWindow}?api_key=${API_KEY}&language=en-US&page=${page}`);
   const data = await res.json();
   return data.results;
 };
 
 // ── What's Popular ───────────────────────────────────────
-export const getPopularTV = async () => {
-  const res = await fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}`);
+export const getPopularTV = async (page = 1) => {
+  const res = await fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
   return data.results;
 };
@@ -57,17 +57,17 @@ export const getMoviesForRent = async () => {
 };
 
 // ── Free To Watch ────────────────────────────────────────
-export const getFreeMovies = async () => {
+export const getFreeMovies = async (page = 1) => {
   const res = await fetch(
-    `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&vote_count.gte=100`
+    `${BASE_URL}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc&vote_count.gte=100&page=${page}`
   );
   const data = await res.json();
   return data.results;
 };
 
-export const getFreeTV = async () => {
+export const getFreeTV = async (page = 1) => {
   const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&vote_count.gte=100`
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&sort_by=popularity.desc&vote_count.gte=100&page=${page}`
   );
   const data = await res.json();
   return data.results;
@@ -86,14 +86,14 @@ export const getOnAirTV = async () => {
   return data.results;
 };
 
-export const getTopRatedTV = async () => {
-  const res = await fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}`);
+export const getTopRatedTV = async (page = 1) => {
+  const res = await fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
   return data.results;
 };
 
-export const getTopRatedMovies = async () => {
-  const res = await fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}`);
+export const getTopRatedMovies = async (page = 1) => {
+  const res = await fetch(`${BASE_URL}/movie/top_rated?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
   return data.results;
 };
@@ -200,26 +200,26 @@ export const getSimilarContent = async (id, type = "movie") => {
 const ANIME_GENRE_ID = 16;
 const JAPAN_LANG = "ja";
 
-export const getPopularAnime = async () => {
+export const getPopularAnime = async (page = 1) => {
   const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=popularity.desc&language=en-US`
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=popularity.desc&language=en-US&page=${page}`
   );
   const data = await res.json();
   return data.results;
 };
 
-export const getTrendingAnime = async () => {
+export const getTrendingAnime = async (page = 1) => {
   const res = await fetch(
-    `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&language=en-US`
+    `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&language=en-US&page=${page}`
   );
   const data = await res.json();
   // Filter for animation/anime manually if trending endpoint doesn't support with_genres
   return data.results.filter(item => item.genre_ids?.includes(ANIME_GENRE_ID));
 };
 
-export const getTopRatedAnime = async () => {
+export const getTopRatedAnime = async (page = 1) => {
   const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=vote_average.desc&vote_count.gte=100&language=en-US`
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=vote_average.desc&vote_count.gte=100&language=en-US&page=${page}`
   );
   const data = await res.json();
   return data.results;

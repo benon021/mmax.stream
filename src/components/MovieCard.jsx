@@ -49,13 +49,14 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
   const title = movie.title || movie.name || movie.original_title || movie.original_name || "Untitled";
   const date = movie.release_date || movie.first_air_date || "";
   const year = date ? date.split("-")[0] : "Release TBD";
-  const mediaType = movie.media_type === "tv" || movie.name ? "TV" : "Movie";
+  const mediaType = movie.media_type === "tv" || movie.mediaType === "tv" || movie.name ? "TV" : "Movie";
 
   const imagePath = useMemo(() => {
+    if (variant === "grid" && movie.poster_path) return `${IMG_BASE_POSTER}${movie.poster_path}`;
     if (movie.backdrop_path) return `${IMG_BASE_BACKDROP}${movie.backdrop_path}`;
     if (movie.poster_path) return `${IMG_BASE_POSTER}${movie.poster_path}`;
     return null;
-  }, [movie.backdrop_path, movie.poster_path]);
+  }, [movie.backdrop_path, movie.poster_path, variant]);
 
   useEffect(() => {
     // Refresh progress on mount or movie change

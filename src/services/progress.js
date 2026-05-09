@@ -29,6 +29,7 @@ export const saveProgress = (id, data) => {
     timestamp: Date.now(),
   };
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(all));
+  window.dispatchEvent(new CustomEvent("progressUpdate"));
 };
 
 export const getAllProgress = () => {
