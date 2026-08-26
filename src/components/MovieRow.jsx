@@ -44,6 +44,31 @@ function MovieRow({ title, tabs, layout = "row" }) {
     }
   };
 
+  const handleKeyDown = (event) => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      el.scrollBy({
+        left: event.key === "ArrowRight" ? el.clientWidth * 0.8 : -el.clientWidth * 0.8,
+        behavior: "smooth",
+      });
+    } else if (event.key === "Home" || event.key === "End") {
+      event.preventDefault();
+      el.scrollTo({
+        left: event.key === "Home" ? 0 : el.scrollWidth,
+        behavior: "smooth",
+      });
+    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      window.scrollBy({
+        top: event.key === "ArrowDown" ? window.innerHeight * 0.75 : -window.innerHeight * 0.75,
+        behavior: "smooth",
+      });
+    }
+  };
+
   // Lazy-load rows when they enter the viewport to reduce startup work
   useEffect(() => {
     const el = rowRef.current;
@@ -164,6 +189,9 @@ function MovieRow({ title, tabs, layout = "row" }) {
         ref={scrollRef}
         className={layout === "grid" ? "movies-grid" : "movie-row-scroll"}
         onWheel={layout === "grid" ? null : handleWheel}
+        onKeyDown={layout === "grid" ? undefined : handleKeyDown}
+        tabIndex={layout === "grid" || loading ? -1 : 0}
+        aria-label={layout === "grid" ? undefined : `${title} movie list`}
       >
         {loading ? (
           <SkeletonCards />

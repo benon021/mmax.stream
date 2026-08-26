@@ -40,11 +40,28 @@ import { useMovieContext } from "../contexts/MovieContext";
 function MovieModal({ movie, onClose }) {
   const { isFavorite, addToFavorites, removeFromFavorites, setIsModalOpen } = useMovieContext();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isServerHelpOpen, setIsServerHelpOpen] = useState(false);
 
   useEffect(() => {
     setIsModalOpen(true);
     return () => setIsModalOpen(false);
   }, [setIsModalOpen]);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = isServerHelpOpen ? "auto" : "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isServerHelpOpen]);
+
+  useEffect(() => {
+    if (!isPlaying) return undefined;
+
+    const timer = setTimeout(() => setIsServerHelpOpen(true), 8000);
+    return () => clearTimeout(timer);
+  }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode]);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [lightsOff, setLightsOff] = useState(false);
   const [episodes, setEpisodes] = useState([]);
@@ -58,16 +75,11 @@ function MovieModal({ movie, onClose }) {
   const [currentMovie, setCurrentMovie] = useState(movie);
   const [expandedEpisode, setExpandedEpisode] = useState(1);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const [loadingPercentage, setLoadingPercentage] = useState(0);
-  const [forceLoaderOffset, setForceLoaderOffset] = useState(true);
-  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
-  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(2);
   const [isServerOpen, setIsServerOpen] = useState(false);
-  const overlayTimerRef = useRef(null);
-  const serverCloseTimerRef = useRef(null);
 
   const [dubPreference, setDubPreference] = useState("eng"); // default to english dub as requested
-  const containerRef = useRef(null);
+  const modalOverlayRef = useRef(null);
   const iframeRef = useRef(null);
 
   const isTV = currentMovie.media_type === "tv" || currentMovie.mediaType === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
@@ -76,6 +88,7 @@ function MovieModal({ movie, onClose }) {
   
   // Robust Data Sanitization - Solve "Unknown"
   const title = currentMovie.title || currentMovie.name || currentMovie.original_title || "Untitled Cinematic";
+  const backdropPath = currentMovie.backdrop_path || currentMovie.poster_path;
   const date = currentMovie.release_date || currentMovie.first_air_date || "";
   const year = date ? date.split("-")[0] : "New Stream";
   const votePercent = currentMovie.vote_average ? Math.round(currentMovie.vote_average * 10) : 85; // fallback to high match for premium feel
@@ -125,8 +138,6 @@ function MovieModal({ movie, onClose }) {
 
   const handlePlayStart = () => {
     setIsPlaying(true);
-    setForceLoaderOffset(true);
-    showOverlayBriefly();
     
     // Initial save
     saveProgress(currentMovie.id, {
@@ -138,17 +149,23 @@ function MovieModal({ movie, onClose }) {
     });
   };
 
-  const showOverlayBriefly = () => {
-    setIsOverlayVisible(true);
-    if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
-    overlayTimerRef.current = setTimeout(() => {
-      setIsOverlayVisible(false);
-    }, 4000); // Overlay stays for 4s during interaction
+  const handleEpisodeSelect = (episodeNumber) => {
+    setSelectedEpisode(episodeNumber);
+    setIsPlaying(true);
+    modalOverlayRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleServerHelpSelect = (serverIndex) => {
+    setCurrentSourceIndex(serverIndex);
+    setIsServerHelpOpen(false);
   };
 
   // Fetch Logic
   useEffect(() => {
     if (currentMovie.id) {
+      setFullDetails(null);
+      setSimilarContent([]);
+      setLoadingSimilar(true);
       const saved = getProgress(currentMovie.id);
       if (saved) {
         if (isTV) {
@@ -159,8 +176,11 @@ function MovieModal({ movie, onClose }) {
       }
 
       // Fetch detailed data for BOTH movies and TV
+      let cancelled = false;
+
       getMovieDetails(currentMovie.id, mediaType)
         .then(data => {
+          if (cancelled) return;
           setFullDetails(data);
           // Use recommendations if available, fallback to similar
           const related = data.recommendations?.results || [];
@@ -168,12 +188,21 @@ function MovieModal({ movie, onClose }) {
           setLoadingSimilar(false);
         })
         .catch(err => {
+          if (cancelled) return;
           console.error(`Failed to fetch ${mediaType} details`, err);
           // Fallback to similar content fetch if full details fail
           getSimilarContent(currentMovie.id, mediaType)
-            .then(data => setSimilarContent(data.slice(0, 12)))
-            .finally(() => setLoadingSimilar(false));
+            .then(data => {
+              if (!cancelled) setSimilarContent((data || []).slice(0, 12));
+            })
+            .finally(() => {
+              if (!cancelled) setLoadingSimilar(false);
+            });
         });
+
+      return () => {
+        cancelled = true;
+      };
     }
   }, [isTV, currentMovie.id, mediaType]);
 
@@ -191,43 +220,6 @@ function MovieModal({ movie, onClose }) {
         });
     }
   }, [isTV, currentMovie.id, selectedSeason]);
-
-  // Interaction Listeners (Show info briefly on movement)
-  useEffect(() => {
-    const handleMessage = (e) => {
-      // Logic for time sync can be kept if needed for progress saving, 
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => {
-      window.removeEventListener("message", handleMessage);
-    };
-  }, [isPlaying]);
-
-  // Branded Loading Logic (Simulated 3s)
-  useEffect(() => {
-    if (isPlaying && forceLoaderOffset) {
-      setLoadingPercentage(0);
-      const startTime = Date.now();
-      const durationTime = 3000;
-
-      const interval = setInterval(() => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(Math.floor((elapsed / durationTime) * 100), 100);
-        setLoadingPercentage(progress);
-
-        if (progress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setForceLoaderOffset(false);
-            setIsVideoLoading(false);
-          }, 300);
-        }
-      }, 30);
-
-      return () => clearInterval(interval);
-    }
-  }, [isPlaying, forceLoaderOffset]);
 
   // Fullscreen Orientation Lock for Mobile
   useEffect(() => {
@@ -262,20 +254,53 @@ function MovieModal({ movie, onClose }) {
 
 
   return createPortal(
-    <div className={`modal-overlay ${lightsOff ? "lights-off-active" : ""}`} onClick={onClose}>
+    <div
+      className={`modal-overlay ${lightsOff ? "lights-off-active" : ""}`}
+      onClick={(event) => event.stopPropagation()}
+      ref={modalOverlayRef}
+    >
       <div
         className={`modal-content ${isTheaterMode ? "theater-mode" : ""} ${isPlaying ? "playing" : ""}`}
         onClick={(e) => e.stopPropagation()}
+        onFocusCapture={(event) => {
+          if (event.target.matches("button, a, [tabindex='0']")) {
+            event.target.scrollIntoView({ block: "nearest", inline: "nearest" });
+          }
+        }}
       >
         <button className="modal-close" onClick={onClose}>✕</button>
+
+        {isServerHelpOpen && (
+          <div className="server-help-popup" role="dialog" aria-label="Change streaming server">
+            <button
+              className="server-help-close"
+              onClick={() => setIsServerHelpOpen(false)}
+              aria-label="Close server help"
+            >
+              ✕
+            </button>
+            <span className="server-help-kicker">Playback help</span>
+            <h2>Can&apos;t find the movie?</h2>
+            <p>Try another server. One of these options may load the title better.</p>
+            <div className="server-help-options">
+              {SOURCES.slice(0, 4).map((source, index) => (
+                <button
+                  type="button"
+                  key={source.id}
+                  className={currentSourceIndex === index ? "active" : ""}
+                  onClick={() => handleServerHelpSelect(index)}
+                >
+                  {source.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="modal-top-section">
           {isPlaying ? (
             <div
               className="player-wrapper-outer liquid-crystal"
-              ref={containerRef}
-              onMouseMove={showOverlayBriefly}
-              onClick={showOverlayBriefly}
             >
               <div className="player-video-bg">
                 <iframe
@@ -283,107 +308,27 @@ function MovieModal({ movie, onClose }) {
                   src={videoUrl}
                   title={title}
                   className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
+                  allow="autoplay; fullscreen; picture-in-picture"
                   allowFullScreen
                   frameBorder="0"
                   onLoad={() => setIsVideoLoading(false)}
                 ></iframe>
               </div>
 
-              <div className={`player-ui-layer ${isOverlayVisible ? "is-visible" : "is-hidden"}`}>
-                  <div className="player-top-controls">
-                    <div 
-                      className={`server-switcher-liquid ${isServerOpen ? "is-open" : ""}`} 
-                      onClick={(e) => e.stopPropagation()}
-                      onMouseEnter={() => {
-                        setIsOverlayVisible(true);
-                        if (serverCloseTimerRef.current) clearTimeout(serverCloseTimerRef.current);
-                      }}
-                      onMouseLeave={() => {
-                        serverCloseTimerRef.current = setTimeout(() => {
-                          setIsServerOpen(false);
-                        }, 300); // 300ms grace period
-                      }}
-                    >
-                      <button 
-                        className="server-trigger-main" 
-                        onClick={() => setIsServerOpen(!isServerOpen)}
-                      >
-                        <span className="trigger-icon">S</span>
-                        <span className="trigger-text">Server: {SOURCES[currentSourceIndex].name}</span>
-                        <svg className={`chevron-icon ${isServerOpen ? "rotated" : ""}`} viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                          <path d="M7 10l5 5 5-5z" />
-                        </svg>
-                      </button>
-                      
-                      {isServerOpen && (
-                        <div className="server-dropdown-liquid liquid-glass-premium">
-                          {SOURCES.map((src, idx) => (
-                            <div 
-                              key={src.id} 
-                              className={`server-option-liquid ${currentSourceIndex === idx ? "active" : ""}`}
-                              onClick={() => {
-                                setCurrentSourceIndex(idx);
-                                setIsServerOpen(false);
-                                setForceLoaderOffset(true);
-                              }}
-                            >
-                              <div className="option-indicator" />
-                              <div className="option-info">
-                                <span className="option-name">{src.name}</span>
-                                <span className="option-type">{src.type}</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button className="player-close-btn" onClick={onClose} title="Close Player">✕</button>
-                  </div>
-
-                  {forceLoaderOffset && (
-                    <div className="premium-loader-overlay branded-loader">
-                      <div className="branded-loader-content">
-                        <div className="loader-logo-wrap">
-                          <span className="loader-m">m</span>
-                          <span className="loader-text">MAX.STREAM</span>
-                        </div>
-                        <div className="circular-loader-wrap">
-                          <svg className="circular-loader-svg" viewBox="0 0 100 100">
-                            <circle className="circular-loader-bg" cx="50" cy="50" r="45" />
-                            <circle
-                              className="circular-loader-fill"
-                              cx="50" cy="50" r="45"
-                              style={{ strokeDashoffset: 283 - (283 * loadingPercentage) / 100 }}
-                            />
-                          </svg>
-                          <div className="loader-percentage">{loadingPercentage}%</div>
-                        </div>
-                        <div className="loader-status-text">mmax.steam...</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="player-info-overlay">
-                    <div className="pause-info-content">
-                      <h1 className="pause-movie-title">{title}</h1>
-                      <div className="pause-meta">
-                        <span className="pause-rating">{votePercent}% Match</span>
-                        <span className="pause-year">{year}</span>
-                        <span className="pause-maturity">{getRating()}</span>
-                        {isTV && <span className="pause-ep">S{selectedSeason}:E{selectedEpisode}</span>}
-                      </div>
-                      <p className="pause-desc">{currentMovie.overview}</p>
-                    </div>
-                  </div>
-                </div>
             </div>
           ) : (
             <div className="modal-backdrop-wrap">
-              <img
-                src={`${IMG_BASE_BACKDROP}${currentMovie.backdrop_path || currentMovie.poster_path}`}
-                alt={title}
-                className="modal-backdrop"
-              />
+              <div className="modal-backdrop-placeholder" aria-label={title}>
+                <span>{title}</span>
+              </div>
+              {backdropPath && (
+                <img
+                  src={`${IMG_BASE_BACKDROP}${backdropPath}`}
+                  alt={title}
+                  className="modal-backdrop"
+                  onError={(event) => { event.currentTarget.style.display = "none"; }}
+                />
+              )}
               <div className="modal-fade" />
               <button className="big-play-btn liquid-btn-primary" onClick={handlePlayStart}>
                 <svg viewBox="0 0 24 24" fill="currentColor" width="50" height="50">
@@ -407,6 +352,9 @@ function MovieModal({ movie, onClose }) {
                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                   <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" /><path d="M7 10h10v4H7z" />
                 </svg>
+              </button>
+              <button className="control-btn" onClick={onClose} aria-label="Close movie">
+                ✕
               </button>
             </div>
           </div>
@@ -447,6 +395,38 @@ function MovieModal({ movie, onClose }) {
             >
               {isFavorite(currentMovie.id) ? "✓ FAVORITES" : "＋ FAVORITES"}
             </button>
+            <div className="modal-server-picker">
+              <button
+                type="button"
+                className="modal-server-trigger"
+                onClick={() => setIsServerOpen(!isServerOpen)}
+                aria-expanded={isServerOpen}
+                aria-haspopup="listbox"
+              >
+                <span className="server-trigger-label">SERVER</span>
+                <span>{currentSource.name}</span>
+                <span aria-hidden="true">▾</span>
+              </button>
+              {isServerOpen && (
+                <div className="modal-server-menu" role="listbox" aria-label="Choose streaming server">
+                  {SOURCES.map((source, index) => (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={currentSourceIndex === index}
+                      key={source.id}
+                      className={`modal-server-option ${currentSourceIndex === index ? "active" : ""}`}
+                      onClick={() => {
+                        setCurrentSourceIndex(index);
+                        setIsServerOpen(false);
+                      }}
+                    >
+                      {source.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <div className="social-links-premium">
               {fullDetails?.external_ids?.instagram_id && (
                 <a href={`https://instagram.com/${fullDetails.external_ids.instagram_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="Instagram">
@@ -507,10 +487,31 @@ function MovieModal({ movie, onClose }) {
 
               {loadingEpisodes ? (
                 <div className="episodes-loading">Loading episodes...</div>
+              ) : episodes.length === 0 ? (
+                <div className="episodes-loading">
+                  {isAnime ? "Anime episodes are currently unavailable." : "Episodes are currently unavailable."}
+                </div>
               ) : (
                 <div className="episodes-list">
                   {episodes.map((ep) => (
-                    <div key={ep.id} className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`} onClick={() => { if (expandedEpisode === ep.episode_number) { setSelectedEpisode(ep.episode_number); setIsPlaying(true); } else { setExpandedEpisode(ep.episode_number); } }}>
+                    <div
+                      key={ep.id}
+                      className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`}
+                      onClick={() => {
+                        if (expandedEpisode === ep.episode_number) handleEpisodeSelect(ep.episode_number);
+                        else setExpandedEpisode(ep.episode_number);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          if (expandedEpisode === ep.episode_number) handleEpisodeSelect(ep.episode_number);
+                          else setExpandedEpisode(ep.episode_number);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${ep.name}, episode ${ep.episode_number}`}
+                    >
                       <div className="episode-header-row">
                         <div className="episode-number">{ep.episode_number}</div>
                         <h3 className="episode-name">{ep.name}</h3>
@@ -524,7 +525,7 @@ function MovieModal({ movie, onClose }) {
                           </div>
                           <div className="episode-details">
                             <p className="episode-desc">{ep.overview || "No description available."}</p>
-                            <button className="episode-play-inline-btn liquid-btn" onClick={(e) => { e.stopPropagation(); setSelectedEpisode(ep.episode_number); setIsPlaying(true); }}>
+                            <button className="episode-play-inline-btn liquid-btn" onClick={(e) => { e.stopPropagation(); handleEpisodeSelect(ep.episode_number); }}>
                               <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z" /></svg>
                               PLAY NOW
                             </button>

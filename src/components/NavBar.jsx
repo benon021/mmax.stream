@@ -82,6 +82,17 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [searchOpen]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen && !searchOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen, searchOpen]);
+
   const handleLinkClick = () => {
     setSearchOpen(false);
     setMobileMenuOpen(false);
@@ -104,7 +115,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
     <>
       <nav className={`navbar ${isAtTop ? "is-at-top" : !isScrolled ? "is-liquid" : "is-scrolled"} ${mobileMenuOpen ? "is-menu-open" : ""} ${searchExpanding ? "search-animating" : ""}`}>
         {/* ── Logo ── */}
-        <Link to="/" className="navbar-logo" onClick={handleLinkClick}>
+        <Link to="/" className="navbar-logo" onClick={handleLinkClick} tabIndex={-1}>
           <span className="mmax-logo-combined">
             <span className="logo-m">m</span>
             <span className="logo-text">max.stream</span>
@@ -130,6 +141,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
           <button
             className={`nav-action-btn search-trigger ${searchExpanding ? "is-active" : ""}`}
             onClick={openSearch}
+            aria-label="Search movies and shows"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="20" height="20">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -139,6 +151,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
           <button 
             className="nav-action-btn profile-trigger" 
             title={user.isAuthenticated ? `Profile: ${user.name}` : "Sign In"}
+            aria-label={user.isAuthenticated ? `Profile: ${user.name}` : "Sign in"}
             onClick={() => navigate("/login")}
           >
             <div className="user-avatar">{userInitial}</div>
@@ -148,6 +161,8 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
             className={`hamburger ${mobileMenuOpen ? "is-active" : ""}`}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation"
           >
             <div className="hamburger-container">
               <span className="bar top"></span>
@@ -158,15 +173,23 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
         </div>
 
         {/* ── Mobile Nav Overlay ── */}
-        <div className={`mobile-nav-overlay ${mobileMenuOpen ? "is-visible" : ""}`}>
+        <div
+          id="mobile-navigation"
+          className={`mobile-nav-overlay ${mobileMenuOpen ? "is-visible" : ""}`}
+          aria-hidden={!mobileMenuOpen}
+        >
           <div className="mobile-nav-header">
-            <Link to="/" className="navbar-logo" onClick={handleLinkClick}>
+            <Link to="/" className="navbar-logo" onClick={handleLinkClick} tabIndex={-1}>
               <span className="mmax-logo-combined">
                 <span className="logo-m">m</span>
                 <span className="logo-text">max.stream</span>
               </span>
             </Link>
-            <button className="mobile-menu-close" onClick={() => setMobileMenuOpen(false)}>
+            <button
+              className="mobile-menu-close"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close navigation"
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="28" height="28">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -193,7 +216,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
             </div>
             
             <div className="mobile-nav-footer">
-              <p>© 2026 MMax.Stream • Premium Cinema</p>
+              <p>© 2026 mmax.stream • Premium Cinema</p>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 /*  */import { useState, useCallback, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import HeroSection from "../components/HeroSection";
 import MovieRow from "../components/MovieRow";
 import MovieCard from "../components/MovieCard";
@@ -43,12 +43,14 @@ const continueWatchingTabs = [
 
 
 function Home() {
+  const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState(null);
   const [lastQuery, setLastQuery] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSection, setActiveSection] = useState("Trending");
+  const isSearchPage = Boolean(searchParams.get("search"));
 
   const sections = [
     { id: "Continue Watching", label: "Continue Watching" },
@@ -100,40 +102,56 @@ function Home() {
 
   const clearSearch = () => {
     setSearchResults(null);
-    setSearchParams({});
+    navigate("/movies", { replace: true });
+  };
+
+  const goBack = () => {
+    navigate("/movies", { replace: true });
   };
 
   return (
-    <div className="home" onClick={() => searchResults && clearSearch()}>
-      <HeroSection onSearch={handleSearch} />
+    <div className="home">
+      {!isSearchPage && <HeroSection onSearch={handleSearch} />}
 
       {/* Search results overlay */}
-      {searchResults !== null && (
-        <div className="search-results-section" onClick={(e) => e.stopPropagation()}>
-          <h2>
-            Search results for &ldquo;{lastQuery}&rdquo;
+      {isSearchPage && (
+        <div className="search-results-section">
+          <div className="search-page-toolbar">
+            <button className="search-back-btn" onClick={goBack} aria-label="Go back">
+              <span aria-hidden="true">←</span>
+              <span>Back</span>
+            </button>
+            <div className="search-page-heading">
+              <span className="search-page-kicker">mmax.stream discovery</span>
+              <h1>Search results</h1>
+              <p>&ldquo;{lastQuery}&rdquo; {searching ? "• Searching" : `• ${searchResults?.length || 0} results`}</p>
+            </div>
             <button
-              onClick={clearSearch}
+              onClick={(event) => {
+                event.stopPropagation();
+                clearSearch();
+              }}
               className="search-clear-inline"
+              type="button"
             >
               ✕ Clear
             </button>
-          </h2>
+          </div>
           {searching && <div className="loading">Searching...</div>}
           {searchError && <div className="error-message">{searchError}</div>}
-          {!searching && searchResults.length === 0 && (
+          {!searching && searchResults?.length === 0 && (
             <p style={{ color: "var(--text-muted)" }}>No results found.</p>
           )}
           <div className="movies-grid">
-            {searchResults.map((movie) => (
-              <MovieCard key={movie.id} movie={movie} />
+            {searchResults?.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} variant="grid" />
             ))}
           </div>
         </div>
       )}
 
       {/* Sections (hidden during search) */}
-      {searchResults === null && (
+      {!isSearchPage && (
         <>
           <div className="top-sections-tabs">
             {sections.map((section) => (

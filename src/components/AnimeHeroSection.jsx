@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import "../css/HeroSection.css"; // Reuse HeroSection styles
 import MovieModal from "./MovieModal";
-import { getTrendingAnimeWithVideos } from "../services/api";
+import { getAnimeHeaderContent } from "../services/api";
 import { useMovieContext } from "../contexts/MovieContext";
 
 const IMG_BASE_ORIGINAL = "https://image.tmdb.org/t/p/original";
@@ -32,7 +32,7 @@ function AnimeHeroSection() {
   useEffect(() => {
     const loadTrending = async () => {
       try {
-        const trending = await getTrendingAnimeWithVideos("week");
+        const trending = await getAnimeHeaderContent();
         setMovies(trending || []);
       } catch (error) {
         console.error("Failed to fetch trending for anime hero:", error);
@@ -129,12 +129,12 @@ function AnimeHeroSection() {
       <div className="hero-vignette-top"></div>
       <div className="hero-vignette-bottom"></div>
       <div className={`hero-content ${fade ? "fade-out" : "fade-in"}`}>
-        <div className="hero-series-type">
-          <span className="brand-logo-small">m</span>
-          <span className="series-text">mmax.anime</span>
-        </div>
         <h1 className="hero-title">{currentMovie.name || currentMovie.title}</h1>
-        <p className="hero-synopsis">{currentMovie.overview?.substring(0, 160)}...</p>
+        <p className="hero-synopsis">
+          {currentMovie.overview?.length > 150
+            ? `${currentMovie.overview.substring(0, 150)}...`
+            : currentMovie.overview || "Discover the latest anime now."}
+        </p>
         <div className="hero-actions">
           <button className="hero-btn play" onClick={() => setSelectedMovie(currentMovie)}>
             <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M8 5v14l11-7z" /></svg>

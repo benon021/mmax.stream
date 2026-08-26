@@ -22,41 +22,18 @@
   z-index: 1;
 }
 
-.hero-video-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  background: #000;
-}
-
-.player-frame {
+.hero-image-container {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100vw;
-  height: 56.25vw;
-  min-height: 85vh;
-  min-width: 151.11vh;
-  transform: translate(-50%, -50%) scale(1.15);
-  transition: opacity 1.2s ease-in-out;
-  opacity: 0;
-  pointer-events: none;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: #000;
+  transform: translate(-50%, -50%);
 }
 
-.show-p1 #hero-yt-player-1 {
-  opacity: 1;
-  z-index: 2;
-}
-
-.show-p2 #hero-yt-player-2 {
-  opacity: 1;
-  z-index: 2;
-}
-
-.hero-image.fallback {
+.hero-image {
   position: absolute;
   top: 0;
   left: 0;
@@ -64,6 +41,27 @@
   height: 100%;
   object-fit: cover;
   z-index: 0;
+}
+
+.hero-image-previous {
+  z-index: 1;
+}
+
+.hero-image-current {
+  z-index: 2;
+}
+
+.hero-image-container.is-transitioning .hero-image-previous {
+  opacity: 1;
+}
+
+.hero-image-container.is-transitioning .hero-image-current {
+  animation: heroImageCrossfade 0.7s ease-in-out both;
+}
+
+@keyframes heroImageCrossfade {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .hero-vignette-bottom {
@@ -109,21 +107,44 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
-  letter-spacing: 4px;
+  width: fit-content;
+  margin-bottom: 0.8rem;
+  padding: 0.35rem 0.7rem 0.35rem 0.35rem;
+  border: 1px solid rgba(255, 114, 0, 0.38);
+  border-radius: 8px;
+  background: rgba(8, 8, 8, 0.66);
+  box-shadow: inset 0 0 0 1px rgba(255, 210, 170, 0.06), 0 5px 16px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-size: 0.7rem;
   font-weight: 700;
   color: #e5e5e5;
 }
 
+.hero-series-type .series-text {
+  color: rgba(255, 209, 168, 0.86);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.55);
+}
+
 .brand-logo-small {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px 3px 8px 3px;
+  background: #ff7200;
+  color: #080808;
+  font-size: 1.35rem;
   font-weight: 900;
-  font-size: 1.5rem;
-  letter-spacing: -1px;
-  background: linear-gradient(135deg, #ff7200 0%, #ffffff 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  line-height: 1;
+  letter-spacing: -0.08em;
+  box-shadow: 0 3px 10px rgba(255, 114, 0, 0.12);
 }
 
 .hero-title {
@@ -144,6 +165,16 @@
   font-weight: 400;
   color: #fff;
   width: 90%;
+  max-width: 42rem;
+  overflow-wrap: anywhere;
+}
+
+.anime-hero .hero-content {
+  max-width: 660px;
+}
+
+.anime-hero .hero-title {
+  text-transform: none;
 }
 
 .hero-actions {
@@ -215,6 +246,42 @@
   font-weight: 600;
 }
 
+.hero-dots {
+  position: absolute;
+  right: 2rem;
+  bottom: 12%;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  max-width: 42vw;
+  flex-wrap: wrap;
+}
+
+.hero-dot {
+  width: 7px;
+  height: 7px;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  transition: width 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.hero-dot:hover,
+.hero-dot.active {
+  width: 20px;
+  border-color: #ff7200;
+  border-radius: 5px;
+  background: #ff7200;
+}
+
+.hero-dot:focus-visible {
+  outline-offset: 3px;
+}
+
 .hero-skeleton {
   width: 100%;
   height: 85vh;
@@ -244,6 +311,65 @@
 
 /* Adjust for responsive */
 @media (max-width: 768px) {
+  .anime-hero {
+    height: min(78svh, 620px);
+    min-height: 420px;
+  }
+
+  .anime-hero .hero-content {
+    bottom: 0;
+    width: 100%;
+    max-width: none;
+    padding: 4rem 1.25rem 1.25rem;
+    background: linear-gradient(to top, rgba(5, 5, 5, 0.98) 8%, rgba(5, 5, 5, 0.78) 58%, transparent 100%);
+  }
+
+  .anime-hero .hero-title {
+    max-width: 100%;
+    font-size: clamp(1.45rem, 8vw, 2.1rem);
+    line-height: 1;
+  }
+
+  .anime-hero .hero-synopsis {
+    max-width: 32rem;
+    width: 100%;
+    font-size: 0.78rem;
+    line-height: 1.35;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    margin-bottom: 0.9rem;
+  }
+
+  .anime-hero .hero-actions {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 0.6rem;
+  }
+
+  .anime-hero .hero-btn {
+    width: auto;
+    min-width: 118px;
+    min-height: 36px;
+    padding: 0.45rem 0.8rem;
+    font-size: 0.75rem;
+  }
+
+  .anime-hero .hero-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .anime-hero .hero-right-controls {
+    top: 5.5rem;
+    bottom: auto;
+    right: 1rem;
+  }
+
+  .anime-hero .maturity-badge-hero {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.72rem;
+  }
+
   .hero {
     height: 100vh;
     min-height: -webkit-fill-available; /* Support for iOS address bar */
@@ -252,11 +378,11 @@
   }
 
   .hero-background,
-  .hero-video-container {
+  .hero-image-container {
     height: 100%;
   }
 
-  .hero-image.fallback {
+  .hero-image {
     height: 100%;
     object-position: center;
   }
@@ -277,24 +403,37 @@
   .hero-series-type {
     justify-content: center;
     margin-bottom: 0.25rem;
+    font-size: 0.58rem;
+    letter-spacing: 2px;
+  }
+
+  .brand-logo-small {
+    width: 28px;
+    height: 28px;
+    font-size: 1.25rem;
+  }
+
+  .hero-series-type .series-text {
+    font-size: 0.95rem;
+    letter-spacing: -0.04em;
   }
 
   .hero-title {
-    font-size: 1.8rem;
+    font-size: clamp(1.35rem, 7vw, 1.9rem);
     margin-bottom: 0.75rem;
     text-transform: none;
-    letter-spacing: -0.5px;
+    letter-spacing: 0;
   }
 
   .hero-synopsis {
-    font-size: 0.9rem;
+    font-size: 0.78rem;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0 auto 1.5rem;
-    width: 90%;
+    margin: 0 auto 1rem;
+    width: min(90%, 34rem);
     opacity: 0.8;
   }
 
@@ -306,14 +445,26 @@
 
   .hero-btn {
     width: 45%;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    min-height: 38px;
+    padding: 0.45rem 0.6rem;
+    font-size: 0.75rem;
     border-radius: 6px;
   }
 
   .hero-right-controls {
     bottom: 45%;
     right: 1.5rem;
+  }
+
+  .hero-dots {
+    right: 1rem;
+    bottom: 40%;
+    max-width: 45vw;
+  }
+
+  .hero-dot {
+    width: 6px;
+    height: 6px;
   }
 
   .maturity-badge-hero {

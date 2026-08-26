@@ -13,7 +13,9 @@ export const searchMovies = async (query) => {
     `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
   );
   const data = await res.json();
-  return data.results;
+  return (data.results || []).filter(
+    (item) => item.media_type === "movie" || item.media_type === "tv"
+  );
 };
 
 // ── Trending ─────────────────────────────────────────────
@@ -46,6 +48,22 @@ export const getMoviesInTheatres = async () => {
   const res = await fetch(`${BASE_URL}/movie/now_playing?api_key=${API_KEY}`);
   const data = await res.json();
   return data.results;
+};
+
+export const getLatestMovies = async () => {
+  const [nowPlaying, upcoming] = await Promise.all([
+    getMoviesInTheatres(),
+    getUpcomingMovies(),
+  ]);
+
+  const moviesById = new Map(
+    [...(nowPlaying || []), ...(upcoming || [])].map((movie) => [movie.id, movie])
+  );
+
+  return [...moviesById.values()]
+    .filter((movie) => movie.backdrop_path || movie.poster_path)
+    .sort((a, b) => (b.release_date || "").localeCompare(a.release_date || ""))
+    .slice(0, 40);
 };
 
 export const getMoviesForRent = async () => {
@@ -250,4 +268,39 @@ export const getTrendingAnimeWithVideos = async (timeWindow = "week") => {
 
   const withTrailers = shuffleArray(detailedAnime.filter((a) => a.youtube_key));
   return withTrailers.slice(0, 10);
+};
+
+const normalizeAnimeTitle = (title = "") =>
+  title.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+export const getAnimeHeaderContent = async () => {
+  const [tmdbContent, jikanResponse] = await Promise.all([
+    getTrendingAnimeWithVideos("week"),
+    fetch("https://api.jikan.moe/v4/top/anime?filter=airing&limit=25").then((res) => {
+      if (!res.ok) throw new Error("Jikan request failed");
+      return res.json();
+    }).catch(() => ({ data: [] })),
+  ]);
+
+  const jikanByTitle = new Map();
+  (jikanResponse.data || []).forEach((anime) => {
+    [anime.title, anime.title_english, anime.title_japanese]
+      .filter(Boolean)
+      .forEach((title) => jikanByTitle.set(normalizeAnimeTitle(title), anime));
+  });
+
+  return tmdbContent.map((anime) => {
+    const jikanAnime = [anime.name, anime.original_name]
+      .map(normalizeAnimeTitle)
+      .map((title) => jikanByTitle.get(title))
+      .find(Boolean);
+
+    if (!jikanAnime) return anime;
+
+    return {
+      ...anime,
+      name: jikanAnime.title_english || jikanAnime.title || anime.name,
+      overview: jikanAnime.synopsis || anime.overview,
+    };
+  });
 };

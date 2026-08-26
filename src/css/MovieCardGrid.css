@@ -53,23 +53,27 @@
 }
 
 /* Ensure grids themselves are responsive if parent containers missing it */
+.movies-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+}
+
 @media (max-width: 1024px) {
-  .search-results-grid, .awards-grid-premium, .movies-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
+  .awards-grid-premium, .movies-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 0.75rem;
   }
 }
 
 @media (max-width: 600px) {
-  .search-results-grid, .awards-grid-premium, .movies-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  .awards-grid-premium, .movies-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
     gap: 0.5rem;
   }
 }
 
 @media (max-width: 480px) {
-  .search-results-grid, .awards-grid-premium, .movies-grid {
-    grid-template-columns: repeat(3, 1fr) !important; /* 3 columns on small phones to reduce card sizes */
+  .awards-grid-premium, .movies-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 0.4rem;
   }
   

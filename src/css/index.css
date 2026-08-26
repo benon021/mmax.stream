@@ -75,6 +75,42 @@ button {
   font-family: inherit;
 }
 
+/* Remote and keyboard selection state */
+:focus-visible {
+  outline: 3px solid #ff7200;
+  outline-offset: 4px;
+  box-shadow: 0 0 0 7px rgba(0, 0, 0, 0.9), 0 0 22px rgba(255, 114, 0, 0.85);
+}
+
+.movie-card-wrapper:focus-visible,
+.episode-card-accordion:focus-visible,
+.mobile-nav-link:focus-visible {
+  position: relative;
+  outline: 3px solid #ff7200;
+  outline-offset: 5px;
+  box-shadow: 0 0 0 8px rgba(0, 0, 0, 0.95), 0 0 28px rgba(255, 114, 0, 0.95);
+}
+
+.movie-card-wrapper:focus-visible .movie-poster {
+  box-shadow: inset 0 0 0 3px #ff7200, inset 0 0 20px rgba(255, 114, 0, 0.45);
+}
+
+.movie-card-wrapper:focus-visible::after,
+.episode-card-accordion:focus-visible::after,
+.mobile-nav-link:focus-visible::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -7px;
+  width: 4px;
+  height: 32px;
+  border-radius: 3px;
+  background: #ff7200;
+  transform: translateY(-50%);
+  box-shadow: 0 0 12px rgba(255, 114, 0, 0.95);
+  pointer-events: none;
+}
+
 img {
   display: block;
   max-width: 100%;

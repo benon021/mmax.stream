@@ -1,10 +1,9 @@
-import { useState, useRef, useEffect, useMemo, memo, useCallback } from "react";
+import { useState, useEffect, useMemo, memo, useCallback } from "react";
 import "../css/MovieCard.css";
 import "../css/MovieCardRow.css";
 import "../css/MovieCardGrid.css";
 import { useMovieContext } from "../contexts/MovieContext";
 import MovieModal from "./MovieModal";
-import { getMovieDetails } from "../services/api";
 import { getProgress } from "../services/progress";
 
 
@@ -14,34 +13,7 @@ const IMG_BASE_POSTER = "https://image.tmdb.org/t/p/w342";
 function MovieCard({ movie, onSelect, variant = "row" }) {
   const { isFavorite, addToFavorites, removeFromFavorites } = useMovieContext();
   const [showModal, setShowModal] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [localProgress, setLocalProgress] = useState(null);
-  const [hoverBounds, setHoverBounds] = useState(null);
-
-  const cardRef = useRef(null);
-  const hoverEnterTimer = useRef(null);
-
-  const handleMouseEnter = useCallback(() => {
-    if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      setHoverBounds({
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        bottom: rect.bottom,
-      });
-    }
-
-    // Increased delay as requested (400ms)
-    hoverEnterTimer.current = setTimeout(() => setIsHovered(true), 400);
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
-    setIsHovered(false);
-    setHoverBounds(null);
-  }, []);
 
   const favorite = useMemo(() => isFavorite(movie.id), [isFavorite, movie.id]);
 
@@ -59,36 +31,8 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
   }, [movie.backdrop_path, movie.poster_path, variant]);
 
   useEffect(() => {
-    // Refresh progress on mount or movie change
     setLocalProgress(getProgress(movie.id));
-
-    return () => {
-      if (hoverEnterTimer.current) clearTimeout(hoverEnterTimer.current);
-    };
   }, [movie.id]);
-
-  // Keep hover active only while the cursor remains near the base card bounds.
-  useEffect(() => {
-    if (!isHovered || !hoverBounds) return;
-
-    const handleWindowMouseMove = (event) => {
-      const padding = 40; // allow some leeway
-      const inside =
-        event.clientX >= hoverBounds.left - padding &&
-        event.clientX <= hoverBounds.right + padding &&
-        event.clientY >= hoverBounds.top - padding &&
-        event.clientY <= hoverBounds.bottom + padding;
-
-      if (!inside) {
-        setIsHovered(false);
-      }
-    };
-
-    window.addEventListener("mousemove", handleWindowMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleWindowMouseMove);
-    };
-  }, [isHovered, hoverBounds]);
 
   const onFavoriteClick = useCallback((e) => {
     e.preventDefault();
@@ -105,9 +49,7 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
     }
   }, [onSelect, movie]);
 
-  // Exact Netflix hover data spoofing
-  const votePercent = Math.round((movie.vote_average || 0) * 10);
-  const maturityBadge = movie.adult ? "18" : "16"; // fallback
+  const maturityBadge = movie.adult ? "18" : "16";
   const duration = movie.runtime
     ? `${movie.runtime}m`
     : movie.episode_run_time?.[0]
@@ -117,11 +59,16 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
   return (
     <>
       <div
-        className={`movie-card-wrapper variant-${variant} ${isHovered ? "is-hovered" : ""}`}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        className={`movie-card-wrapper variant-${variant}`}
+        onKeyDown={(event) => {
+          if ((event.key === "Enter" || event.key === " ") && event.target === event.currentTarget) {
+            event.preventDefault();
+            handleCardClick();
+          }
+        }}
+        tabIndex={0}
+        aria-label={`Open details for ${title}`}
         onClick={handleCardClick}
-        ref={cardRef}
       >
         <div className="movie-card">
           <div className="movie-poster">
@@ -131,8 +78,7 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
               <div className="poster-placeholder">🎬</div>
             )}
 
-            {/* Persistent Progress Bar on Poster - only show if watched AND NOT hovered */}
-            {localProgress && !isHovered && (
+            {localProgress && (
               <div className="persistent-progress-container">
                 <div 
                   className="persistent-progress-fill" 
@@ -142,24 +88,6 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
             )}
 
 
-
-
-            {/* R Series Badge */}
-            <div className="netflix-card-badge">
-              <span className="r-logo-small">m</span>
-            </div>
-
-            {/* HD Badge - Top Right */}
-            <div className="hd-badge">HD</div>
-
-            {/* Hover Image Container */}
-            {isHovered && imagePath && (
-              <div className="hover-image-container">
-                <img src={imagePath} alt={title} className="hover-backdrop-img" />
-                <div className="video-bottom-gradient"></div>
-                {!isHovered && <span className="video-title-floating">{title}</span>}
-              </div>
-            )}
           </div>
 
           {/* New: Grid Metadata (Visible on mobile/grids where hover is disabled) */}

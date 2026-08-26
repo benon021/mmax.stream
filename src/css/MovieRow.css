@@ -74,11 +74,18 @@
 
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
 }
 
 .movie-row-scroll>* {
   pointer-events: auto;
   /* Re-enable for the actual cards */
+  scroll-snap-align: start;
+}
+
+.movie-row-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
 }
 
 .movie-row-scroll::-webkit-scrollbar {

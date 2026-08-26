@@ -8,7 +8,7 @@ function Landing() {
       {/* Hero Section */}
       <section className="landing-hero">
         <div className="hero-content">
-          <h1 className="animate-fade-up">MMax.Stream</h1>
+          <h1 className="animate-fade-up">mmax.stream</h1>
           <p className="hero-tagline animate-fade-up delay-1">
             Where your favorite stories come to life. Ad-free. High speed. Pure cinema.
           </p>
@@ -40,7 +40,7 @@ function Landing() {
           <div className="info-card">
             <h3>For Every Device</h3>
             <p>
-              Whether you're on your phone, tablet, or big-screen TV, MMax.Stream provides a seamless, immersive experience everywhere.
+              Whether you're on your phone, tablet, or big-screen TV, mmax.stream provides a seamless, immersive experience everywhere.
             </p>
           </div>
         </div>
@@ -48,12 +48,12 @@ function Landing() {
         <div className="about-section">
           <h2>More than just a streaming site.</h2>
           <p>
-            MMax.Stream was built by movie fans, for movie fans. We believe in the power of storytelling and the magic of cinema. Our goal is to provide a clean, user-friendly, and high-performance platform where you can discover new worlds and relive your favorites.
+              mmax.stream was built by movie fans, for movie fans. We believe in the power of storytelling and the magic of cinema. Our goal is to provide a clean, user-friendly, and high-performance platform where you can discover new worlds and relive your favorites.
           </p>
           <div className="blog-posts">
             <div className="blog-post">
               <span className="post-date">March 20, 2026</span>
-              <h4>The Future of Streaming: What's Next for MMax?</h4>
+              <h4>The Future of Streaming: What's Next for mmax.stream?</h4>
               <p>We're introducing new ways to discover content, including personalized AI recommendations and communal watch parties...</p>
             </div>
             <div className="blog-post">

@@ -1,59 +1,48 @@
+import { Link, useLocation } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import "../css/Footer.css";
 
+const FOOTER_LINKS = [
+  { label: "Home", to: "/" },
+  { label: "Movies", to: "/movies" },
+  { label: "TV", to: "/tv-shows" },
+  { label: "Anime", to: "/anime" },
+  { label: "Favorites", to: "/favorites" },
+  { label: "People", to: "/people" },
+  { label: "Awards", to: "/awards" },
+];
+
 function Footer() {
   const { user } = useUser();
+  const location = useLocation();
+
   return (
     <footer className="site-footer">
       <div className="footer-inner">
-        {/* Logo block */}
-        <div className="footer-logo-block">
-          <div>
-            <div className="footer-logo-text">MMax◆<br />Stream</div>
-            <span className="footer-logo-pill"></span>
-          </div>
-          <button className="footer-hi-btn">Hi {user.name}!</button>
+        <div className="footer-brand-block">
+          <div className="footer-logo-text">mmax.stream</div>
+          <span className="footer-tagline">Your screen. Your story.</span>
+          <span className="footer-user">Hi, {user.name}</span>
         </div>
 
-        {/* THE BASICS */}
-        <div className="footer-col">
-          <h4>THE BASICS</h4>
-          <ul>
-            <li><a href="#">About us</a></li>
-            
-          </ul>
-        </div>
-
-        {/* GET INVOLVED */}
-        <div className="footer-col">
-          <h4>GET INVOLVED</h4>
-          <ul>
-            <li><a href="#">Contribution Bible</a></li>
-            
-          </ul>
-        </div>
-
-        {/* COMMUNITY */}
-        <div className="footer-col">
-          <h4>COMMUNITY</h4>
-          <ul>
-            <li><a href="#">Guidelines</a></li>
-          
-          </ul>
-        </div>
-
-        {/* LEGAL */}
-        <div className="footer-col">
-          <h4>LEGAL</h4>
-          <ul>
-            <li><a href="#">Terms of Use</a></li>
-            
-          </ul>
-        </div>
+        <nav className="footer-navigation" aria-label="Bottom navigation">
+          {FOOTER_LINKS.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`footer-nav-link ${location.pathname === item.to ? "active" : ""}`}
+              aria-current={location.pathname === item.to ? "page" : undefined}
+            >
+              <span className="footer-nav-dot" aria-hidden="true"></span>
+              <span>{item.label}</span>
+            </Link>
+          ))}
+        </nav>
       </div>
 
       <div className="footer-bottom">
-        Build by papsy.tech
+        <span>mmax.stream</span>
+        <span>Built by papsy.tech</span>
       </div>
     </footer>
   );

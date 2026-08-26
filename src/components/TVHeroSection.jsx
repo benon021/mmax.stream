@@ -151,17 +151,11 @@ function TVHeroSection() {
       <div className="hero-vignette-bottom"></div>
 
       <div className={`hero-content ${fade ? "fade-out" : "fade-in"}`}>
-        <div className="hero-series-type">
-          <span className="brand-logo-small">m</span>
-          <span className="series-text">mmax.stream series</span>
-        </div>
-
         <h1 className="hero-title">{currentShow.name || currentShow.original_name}</h1>
-
         <p className="hero-synopsis">
           {currentShow.overview?.length > 150
-            ? currentShow.overview.substring(0, 150) + "..."
-            : currentShow.overview}
+            ? `${currentShow.overview.substring(0, 150)}...`
+            : currentShow.overview || "Discover the latest series now."}
         </p>
 
         <div className="hero-actions">

@@ -8,7 +8,6 @@ import Awards from "./pages/Awards";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { MovieProvider } from "./contexts/MovieContext";
 import NavBar from "./components/NavBar";
-import Footer from "./components/Footer";
 
 import Landing from "./pages/Landing";
 import Anime from "./pages/Anime";
@@ -36,14 +35,19 @@ function App() {
     navigate(`/movies?search=${encodeURIComponent(query)}`);
   };
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   const isLandingPage = location.pathname === "/";
+  const isSearchPage = location.pathname === "/movies" && Boolean(new URLSearchParams(location.search).get("search"));
 
   return (
     <UserProvider>
       <MovieProvider>
-        <div className={`app-container ${isLandingPage ? "landing-mode" : ""}`}>
+        <div className={`app-container ${isLandingPage ? "landing-mode" : ""} ${isSearchPage ? "search-page-mode" : ""}`}>
           <RefreshLoader />
-          {!isLandingPage && <NavBar onSearch={handleSearch} isScrolled={isScrolled} isAtTop={isAtTop} />}
+          {!isLandingPage && !isSearchPage && <NavBar onSearch={handleSearch} isScrolled={isScrolled} isAtTop={isAtTop} />}
           
           <PullToRefresh>
             <main className="content-area">
@@ -59,8 +63,13 @@ function App() {
               </Routes>
             </main>
 
-            {!isLandingPage && <Footer />}
           </PullToRefresh>
+          {isScrolled && (
+            <button className="back-to-top" onClick={scrollToTop} aria-label="Back to top">
+              <span aria-hidden="true">↑</span>
+              <span>Top</span>
+            </button>
+          )}
         </div>
       </MovieProvider>
     </UserProvider>

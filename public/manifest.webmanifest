@@ -1,0 +1,21 @@
+{
+  "name": "MMax.Stream",
+  "short_name": "MMax",
+  "description": "Movies, TV series, anime, and more.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#050505",
+  "theme_color": "#ff7200",
+  "categories": ["entertainment", "video"],
+  "icons": [
+    {
+      "src": "./mmax-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -23,7 +23,7 @@ function Login() {
   return (
     <div className="login-page">
       <div className="login-card">
-        <h1 className="login-title">Join MMax.Stream</h1>
+        <h1 className="login-title">Join mmax.stream</h1>
         <p className="login-subtitle">Sign in to save favorites and track your progress</p>
         
         <form onSubmit={handleSubmit} className="login-form">

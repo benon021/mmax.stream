@@ -107,6 +107,19 @@
   text-transform: lowercase;
 }
 
+@media (max-width: 600px) {
+  .variant-row.movie-card-wrapper,
+  .variant-row .movie-card {
+    width: 10rem;
+  }
+
+  .variant-row.movie-card-wrapper,
+  .variant-row .movie-card,
+  .variant-row .movie-poster {
+    height: 5.65rem;
+  }
+}
+
 /* Lower Hover Details */
 .variant-row .netflix-hover-content {
   position: relative;
@@ -122,6 +135,10 @@
   pointer-events: none;
   transition: opacity 0.3s ease;
   overflow: hidden;
+}
+
+.variant-row .netflix-hover-content {
+  display: none;
 }
 
 .variant-row.movie-card-wrapper.is-hovered .netflix-hover-content {
