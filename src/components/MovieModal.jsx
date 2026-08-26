@@ -37,11 +37,12 @@ const SOURCES = [
 
 import { useMovieContext } from "../contexts/MovieContext";
 
-function MovieModal({ movie, onClose }) {
+function MovieModal({ movie, onClose, disableHelpPopup = false }) {
   const { isFavorite, addToFavorites, removeFromFavorites, setIsModalOpen } = useMovieContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isServerHelpOpen, setIsServerHelpOpen] = useState(false);
-
+  const [currentMovie, setCurrentMovie] = useState(movie);
+  
   useEffect(() => {
     setIsModalOpen(true);
     return () => setIsModalOpen(false);
@@ -56,23 +57,27 @@ function MovieModal({ movie, onClose }) {
     };
   }, [isServerHelpOpen]);
 
-  useEffect(() => {
-    if (!isPlaying) return undefined;
-
-    const timer = setTimeout(() => setIsServerHelpOpen(true), 8000);
-    return () => clearTimeout(timer);
-  }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode]);
   const [isTheaterMode, setIsTheaterMode] = useState(false);
   const [lightsOff, setLightsOff] = useState(false);
   const [episodes, setEpisodes] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
+
+  useEffect(() => {
+    if (disableHelpPopup) return undefined;
+    if (!isPlaying) return undefined;
+
+    const timer = setTimeout(() => setIsServerHelpOpen(true), 8000);
+    return () => clearTimeout(timer);
+  }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode, disableHelpPopup]);
+
   const [loadingEpisodes, setLoadingEpisodes] = useState(false);
   const [fullDetails, setFullDetails] = useState(null);
   const [isSeasonOpen, setIsSeasonOpen] = useState(false);
   const [similarContent, setSimilarContent] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
-  const [currentMovie, setCurrentMovie] = useState(movie);
+
+
   const [expandedEpisode, setExpandedEpisode] = useState(1);
   const [isVideoLoading, setIsVideoLoading] = useState(true);
   const [currentSourceIndex, setCurrentSourceIndex] = useState(2);
@@ -308,11 +313,15 @@ function MovieModal({ movie, onClose }) {
                   src={videoUrl}
                   title={title}
                   className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
-                  allow="autoplay; fullscreen; picture-in-picture"
+                  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
                   allowFullScreen
                   frameBorder="0"
                   onLoad={() => setIsVideoLoading(false)}
                 ></iframe>
+                {/* Fallback link to open video in a new tab if iframe fails */}
+                <a href={videoUrl} target="_blank" rel="noreferrer" className="open-video-new-tab">
+                  Open video in new window
+                </a>
               </div>
 
             </div>
