@@ -88,8 +88,18 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    // Prevent body scroll chaining on iOS/mobile touch devices
+    const preventScroll = (e) => {
+      if (!e.target.closest(".mobile-nav-content") && !e.target.closest(".search-container")) {
+        e.preventDefault();
+      }
+    };
+    
+    document.addEventListener("touchmove", preventScroll, { passive: false });
+
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.removeEventListener("touchmove", preventScroll);
     };
   }, [mobileMenuOpen, searchOpen]);
 
@@ -283,7 +293,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
                 ))
               )}
               {!loading && query && results.length === 0 && (
-                <div className="search-no-results">No results found for "{query}"</div>
+                <div className="search-no-results">No results found for &quot;{query}&quot;</div>
               )}
             </div>
           </div>

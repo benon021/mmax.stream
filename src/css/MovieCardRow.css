@@ -107,18 +107,6 @@
   text-transform: lowercase;
 }
 
-@media (max-width: 600px) {
-  .variant-row.movie-card-wrapper,
-  .variant-row .movie-card {
-    width: 10rem;
-  }
-
-  .variant-row.movie-card-wrapper,
-  .variant-row .movie-card,
-  .variant-row .movie-poster {
-    height: 5.65rem;
-  }
-}
 
 /* Lower Hover Details */
 .variant-row .netflix-hover-content {
@@ -289,26 +277,35 @@
 
 /* Mobile Adjustments for Row specifically */
 @media (max-width: 768px) {
-  .variant-row.movie-card-wrapper {
+  .variant-row.movie-card-wrapper,
+  .variant-row .movie-card {
     width: 12rem;
     height: 7rem;
   }
-
-  .variant-row .movie-card {
-    width: 12rem;
+  .variant-row .movie-poster {
     height: 7rem;
   }
 }
 
-@media (max-width: 480px) {
-  .variant-row.movie-card-wrapper {
-    width: 10.5rem;
-    height: 6rem;
-  }
-
+@media (max-width: 600px) {
+  .variant-row.movie-card-wrapper,
   .variant-row .movie-card {
-    width: 10.5rem;
-    height: 6rem;
+    width: 10rem;
+    height: 5.65rem;
+  }
+  .variant-row .movie-poster {
+    height: 5.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .variant-row.movie-card-wrapper,
+  .variant-row .movie-card {
+    width: 7.5rem;
+    height: 4.25rem;
+  }
+  .variant-row .movie-poster {
+    height: 4.25rem;
   }
 
   .variant-row.movie-card-wrapper.is-hovered {
@@ -317,8 +314,8 @@
   }
 
   .variant-row.movie-card-wrapper.is-hovered .movie-card {
-    height: 6rem;
-    width: 10.5rem;
+    height: 4.25rem;
+    width: 7.5rem;
     transform: none;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   }

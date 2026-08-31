@@ -291,6 +291,7 @@
   visibility: hidden;
   transform: scale(1.05);
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  overscroll-behavior: contain;
 }
 
 .mobile-nav-overlay.is-visible {
@@ -333,6 +334,7 @@
   align-items: center;
   gap: 1rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .mobile-nav-links-grid {
@@ -481,6 +483,7 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 114, 0, 0.5) transparent;
+    overscroll-behavior: contain;
   }
 
   .mobile-nav-links-grid {

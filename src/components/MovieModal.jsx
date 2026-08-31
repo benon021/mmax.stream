@@ -37,12 +37,46 @@ const SOURCES = [
 
 import { useMovieContext } from "../contexts/MovieContext";
 
-function MovieModal({ movie, onClose, disableHelpPopup = false }) {
+function MovieModal({ movie, onClose }) {
   const { isFavorite, addToFavorites, removeFromFavorites, setIsModalOpen } = useMovieContext();
+  
+  // State Declarations
+  const [currentMovie, setCurrentMovie] = useState(movie);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isServerHelpOpen, setIsServerHelpOpen] = useState(false);
-  const [currentMovie, setCurrentMovie] = useState(movie);
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
+  const [lightsOff, setLightsOff] = useState(false);
+  const [episodes, setEpisodes] = useState([]);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [selectedEpisode, setSelectedEpisode] = useState(1);
+  const [loadingEpisodes, setLoadingEpisodes] = useState(false);
+  const [fullDetails, setFullDetails] = useState(null);
+  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
+  const [similarContent, setSimilarContent] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [expandedEpisode, setExpandedEpisode] = useState(1);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
+  // default source index will be set dynamically based on content type
+  const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
+  const [isServerOpen, setIsServerOpen] = useState(false);
+  const [dubPreference, setDubPreference] = useState("eng"); // default to english dub as requested
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [playTrailerFirst, setPlayTrailerFirst] = useState(false);
   
+  const modalOverlayRef = useRef(null);
+  const iframeRef = useRef(null);
+
+  // Content type helper variables derived from currentMovie
+  const isTV = currentMovie.media_type === "tv" || currentMovie.mediaType === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
+  const isAnime = isTV && (currentMovie.genre_ids?.includes(16) || currentMovie.original_language === "ja");
+  const mediaType = isTV ? "tv" : "movie";
+
+  // Reset trailer states when movie changes
+  useEffect(() => {
+    setTrailerKey(null);
+    setPlayTrailerFirst(false);
+  }, [currentMovie.id]);
+
   useEffect(() => {
     setIsModalOpen(true);
     return () => setIsModalOpen(false);
@@ -57,39 +91,22 @@ function MovieModal({ movie, onClose, disableHelpPopup = false }) {
     };
   }, [isServerHelpOpen]);
 
-  const [isTheaterMode, setIsTheaterMode] = useState(false);
-  const [lightsOff, setLightsOff] = useState(false);
-  const [episodes, setEpisodes] = useState([]);
-  const [selectedSeason, setSelectedSeason] = useState(1);
-  const [selectedEpisode, setSelectedEpisode] = useState(1);
-
   useEffect(() => {
-    if (disableHelpPopup) return undefined;
     if (!isPlaying) return undefined;
 
     const timer = setTimeout(() => setIsServerHelpOpen(true), 8000);
     return () => clearTimeout(timer);
-  }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode, disableHelpPopup]);
+  }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode]);
 
-  const [loadingEpisodes, setLoadingEpisodes] = useState(false);
-  const [fullDetails, setFullDetails] = useState(null);
-  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
-  const [similarContent, setSimilarContent] = useState([]);
-  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  // Set default streaming source: Alpha for movies, Gamma for anime
+  useEffect(() => {
+    if (isAnime) {
+      setCurrentSourceIndex(2); // Gamma
+    } else {
+      setCurrentSourceIndex(0); // Alpha
+    }
+  }, [isAnime, currentMovie.id]);
 
-
-  const [expandedEpisode, setExpandedEpisode] = useState(1);
-  const [isVideoLoading, setIsVideoLoading] = useState(true);
-  const [currentSourceIndex, setCurrentSourceIndex] = useState(2);
-  const [isServerOpen, setIsServerOpen] = useState(false);
-
-  const [dubPreference, setDubPreference] = useState("eng"); // default to english dub as requested
-  const modalOverlayRef = useRef(null);
-  const iframeRef = useRef(null);
-
-  const isTV = currentMovie.media_type === "tv" || currentMovie.mediaType === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
-  const isAnime = isTV && (currentMovie.genre_ids?.includes(16) || currentMovie.original_language === "ja");
-  const mediaType = isTV ? "tv" : "movie";
   
   // Robust Data Sanitization - Solve "Unknown"
   const title = currentMovie.title || currentMovie.name || currentMovie.original_title || "Untitled Cinematic";
@@ -187,6 +204,17 @@ function MovieModal({ movie, onClose, disableHelpPopup = false }) {
         .then(data => {
           if (cancelled) return;
           setFullDetails(data);
+
+          // Extract YouTube Trailer Key
+          const videos = data.videos?.results || [];
+          const trailer = videos.find(v => v.type === "Trailer" && v.site === "YouTube") || 
+                          videos.find(v => v.site === "YouTube");
+          if (trailer?.key) {
+            setTrailerKey(trailer.key);
+          } else {
+            setTrailerKey(null);
+          }
+
           // Use recommendations if available, fallback to similar
           const related = data.recommendations?.results || [];
           setSimilarContent(related.length > 0 ? related.slice(0, 12) : []);
@@ -254,8 +282,10 @@ function MovieModal({ movie, onClose, disableHelpPopup = false }) {
 
 
   // Handle Video Source Change
-  const currentSource = SOURCES[currentSourceIndex];
-  const videoUrl = currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
+   const currentSource = SOURCES[currentSourceIndex];
+   const videoUrl = (playTrailerFirst && trailerKey)
+     ? `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1`
+     : currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
 
 
   return createPortal(
@@ -318,6 +348,14 @@ function MovieModal({ movie, onClose, disableHelpPopup = false }) {
                   frameBorder="0"
                   onLoad={() => setIsVideoLoading(false)}
                 ></iframe>
+                {playTrailerFirst && (
+                  <button 
+                    className="skip-trailer-overlay-btn"
+                    onClick={() => setPlayTrailerFirst(false)}
+                  >
+                    Watch Movie
+                  </button>
+                )}
                 {/* Fallback link to open video in a new tab if iframe fails */}
                 <a href={videoUrl} target="_blank" rel="noreferrer" className="open-video-new-tab">
                   Open video in new window
@@ -330,7 +368,15 @@ function MovieModal({ movie, onClose, disableHelpPopup = false }) {
               <div className="modal-backdrop-placeholder" aria-label={title}>
                 <span>{title}</span>
               </div>
-              {backdropPath && (
+              {trailerKey ? (
+                <iframe
+                  className="modal-backdrop-iframe"
+                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3`}
+                  title={`${title} Background Trailer`}
+                  allow="autoplay; encrypted-media"
+                  frameBorder="0"
+                ></iframe>
+              ) : backdropPath && (
                 <img
                   src={`${IMG_BASE_BACKDROP}${backdropPath}`}
                   alt={title}
@@ -396,6 +442,21 @@ function MovieModal({ movie, onClose, disableHelpPopup = false }) {
                   SUB
                 </button>
               </div>
+            )}
+
+            {trailerKey && (
+              <button 
+                className="modal-btn secondary trailer-btn"
+                onClick={() => {
+                  setPlayTrailerFirst(true);
+                  setIsPlaying(true);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style={{ marginRight: '6px' }}>
+                  <path d="M21 6h-7.59l3.29-3.29L16 2l-4 4-4-4-.71.71L10.59 6H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 14H3V8h18v12zM9 10v8l7-4z"/>
+                </svg>
+                TRAILER
+              </button>
             )}
 
             <button 
