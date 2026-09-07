@@ -2,7 +2,20 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/Landing.css";
 
-/* Small inline icon set — kept local so this file has zero new deps */
+const HERO_BACKDROP_IMAGES = [
+  "https://image.tmdb.org/t/p/original/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
+  "https://image.tmdb.org/t/p/original/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
+  "https://image.tmdb.org/t/p/original/hA2ple9q4qnwxp3hKVNhroipsir.jpg",
+  "https://image.tmdb.org/t/p/original/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg",
+  "https://image.tmdb.org/t/p/original/s3TBrRGB1iav7gFOCNx3H31MoES.jpg",
+  "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=2400&q=85",
+  "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?auto=format&fit=crop&w=2400&q=85",
+];
+
+/* Small inline icon set kept local so this file has zero new deps */
 const Icon = {
   Arrow: (props) => (
     <svg
@@ -161,6 +174,7 @@ function Landing() {
   const [openFaq, setOpenFaq] = useState(null);
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [heroIsVisible, setHeroIsVisible] = useState(true);
 
   const testimonials = [
     {
@@ -207,6 +221,11 @@ function Landing() {
   ];
 
   useEffect(() => {
+    HERO_BACKDROP_IMAGES.forEach((imageSource) => {
+      const image = new Image();
+      image.src = imageSource;
+    });
+
     const revealElements = document.querySelectorAll(".landing-reveal");
 
     const observer = new IntersectionObserver(
@@ -222,7 +241,18 @@ function Landing() {
 
     revealElements.forEach((element) => observer.observe(element));
 
-    return () => observer.disconnect();
+    const hero = document.querySelector(".landing-hero");
+    const heroObserver = new IntersectionObserver(
+      ([entry]) => setHeroIsVisible(entry.isIntersecting),
+      { threshold: 0.05 },
+    );
+
+    if (hero) heroObserver.observe(hero);
+
+    return () => {
+      observer.disconnect();
+      heroObserver.disconnect();
+    };
   }, []);
 
   const handleSubscribe = (event) => {
@@ -238,14 +268,18 @@ function Landing() {
           HERO
       ====================================================== */}
 
-      <section className="landing-hero">
+      <section className={`landing-hero ${heroIsVisible ? "hero-is-visible" : "hero-is-static"}`}>
         <div className="hero-cinema-backdrop" aria-hidden="true">
-          <div className="backdrop-slide backdrop-slide-one"></div>
-          <div className="backdrop-slide backdrop-slide-two"></div>
-          <div className="backdrop-slide backdrop-slide-three"></div>
-          <div className="backdrop-slide backdrop-slide-four"></div>
-          <div className="backdrop-slide backdrop-slide-five"></div>
-          <div className="backdrop-slide backdrop-slide-six"></div>
+          {HERO_BACKDROP_IMAGES.map((imageSource, index) => (
+            <div
+              className="backdrop-slide"
+              key={imageSource}
+              style={{
+                backgroundImage: `url("${imageSource}")`,
+                animationDelay: `${index * -6}s`,
+              }}
+            ></div>
+          ))}
         </div>
 
         <div className="hero-vignette"></div>
@@ -261,7 +295,7 @@ function Landing() {
             Where your favorite stories come to life.
             <br />
             <span>
-              Ad-free. High speed. <strong>Pure cinema.</strong>
+              No ads. High speed. <strong>Just great cinema.</strong>
             </span>
           </p>
 
@@ -313,9 +347,7 @@ function Landing() {
       >
         <div className="section-header-centered">
           <div className="section-kicker">
-            <span></span>
             THE EXPERIENCE
-            <span></span>
           </div>
 
           <h2>
@@ -323,8 +355,8 @@ function Landing() {
           </h2>
 
           <p>
-            Built around one simple idea — make discovering and enjoying stories
-            feel effortless.
+            A simple way to discover something good and settle in for a great
+            watch.
           </p>
         </div>
 
@@ -333,7 +365,7 @@ function Landing() {
             <div className="benefit-icon">
               <Icon.NoAds width="22" height="22" />
             </div>
-            <h3>Ad-Free Experience</h3>
+            <h3>No Ads</h3>
             <p>
               Stay immersed in your story without unnecessary interruptions.
             </p>
@@ -375,9 +407,9 @@ function Landing() {
             <div className="benefit-icon">
               <Icon.ShieldCheck width="22" height="22" />
             </div>
-            <h3>No Sign Up Required</h3>
+            <h3>Start Watching</h3>
             <p>
-              Get straight to discovering stories without unnecessary friction.
+              Open the site and start finding something to watch right away.
             </p>
             <span className="benefit-number">04</span>
           </div>
@@ -454,7 +486,6 @@ function Landing() {
         <div className="section-header-row">
           <div>
             <div className="section-kicker">
-              <span></span>
               COMMUNITY
             </div>
 
@@ -524,7 +555,6 @@ function Landing() {
       <section className="devices-section landing-reveal">
         <div className="devices-content">
           <div className="section-kicker">
-            <span></span>
             EVERYWHERE YOU GO
           </div>
 
@@ -634,7 +664,6 @@ function Landing() {
       <section className="newsletter-section landing-reveal">
         <div className="newsletter-copy">
           <div className="section-kicker">
-            <span></span>
             STAY IN THE LOOP
           </div>
 
@@ -683,7 +712,7 @@ function Landing() {
             <Icon.NoAds width="18" height="18" />
           </span>
           <div>
-            <strong>Ad-Free</strong>
+            <strong>No Ads</strong>
             <span>Experience</span>
           </div>
         </div>
@@ -716,7 +745,6 @@ function Landing() {
       <section className="faq-app-section landing-reveal">
         <div className="faq-panel">
           <div className="section-kicker">
-            <span></span>
             NEED HELP?
           </div>
 
@@ -750,8 +778,7 @@ function Landing() {
 
         <div className="app-panel">
           <div className="section-kicker">
-            <span></span>
-            COMING SOON
+            ON THE WAY
           </div>
 
           <h2>
@@ -766,7 +793,7 @@ function Landing() {
                 <Icon.PlayStore width="20" height="20" />
               </span>
               <span>
-                <small>COMING SOON TO</small>
+                <small>AVAILABLE SOON ON</small>
                 Google Play
               </span>
             </button>
@@ -776,7 +803,7 @@ function Landing() {
                 <Icon.Apple width="18" height="18" />
               </span>
               <span>
-                <small>COMING SOON TO</small>
+                <small>AVAILABLE SOON ON</small>
                 App Store
               </span>
             </button>
@@ -807,9 +834,7 @@ function Landing() {
         <div className="final-cta-glow"></div>
 
         <div className="section-kicker">
-          <span></span>
           YOUR NEXT STORY AWAITS
-          <span></span>
         </div>
 
         <h2>

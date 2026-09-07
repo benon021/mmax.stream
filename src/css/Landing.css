@@ -1,5 +1,5 @@
 /* =========================================================
-   MMAX.STREAM — PREMIUM LANDING EXPERIENCE
+  MMAX.STREAM PREMIUM LANDING EXPERIENCE
    ========================================================= */
 
 .landing-container {
@@ -89,13 +89,6 @@
   letter-spacing: 0.2em;
 }
 
-.section-kicker span {
-  width: 14px;
-  height: 1px;
-  background: var(--landing-orange);
-  display: inline-block;
-}
-
 .section-header-centered .section-kicker {
   justify-content: center;
 }
@@ -155,44 +148,19 @@
   pointer-events: none;
 }
 
+.landing-hero.hero-is-static .backdrop-slide {
+  animation-play-state: paused;
+}
+
 .backdrop-slide {
   position: absolute;
   inset: -3%;
   background-position: center;
   background-size: cover;
   opacity: 0;
-  animation: backdropCrossfade 36s ease-in-out infinite;
+  animation: backdropCrossfade 60s linear infinite;
   transform: scale(1.04);
-}
-
-.backdrop-slide-one {
-  background-image: url("https://image.tmdb.org/t/p/original/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg");
-  animation-delay: 0s;
-}
-
-.backdrop-slide-two {
-  background-image: url("https://image.tmdb.org/t/p/original/62HCnUTziyWcpDaBO2i1DX17ljH.jpg");
-  animation-delay: 6s;
-}
-
-.backdrop-slide-three {
-  background-image: url("https://image.tmdb.org/t/p/original/hA2ple9q4qnwxp3hKVNhroipsir.jpg");
-  animation-delay: 12s;
-}
-
-.backdrop-slide-four {
-  background-image: url("https://image.tmdb.org/t/p/original/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg");
-  animation-delay: 18s;
-}
-
-.backdrop-slide-five {
-  background-image: url("https://image.tmdb.org/t/p/original/s3TBrRGB1iav7gFOCNx3H31MoES.jpg");
-  animation-delay: 24s;
-}
-
-.backdrop-slide-six {
-  background-image: url("https://image.tmdb.org/t/p/original/7WJjFviFBFFw3gAt7QgVJ3Hm3jz.jpg");
-  animation-delay: 30s;
+  will-change: opacity, transform;
 }
 
 .hero-cinema-backdrop::after {
@@ -1493,12 +1461,12 @@
 
 @keyframes backdropCrossfade {
   0%,
-  4% {
+  5% {
     opacity: 0;
     transform: scale(1.04);
   }
-  10%,
-  22% {
+  13%,
+  20% {
     opacity: 1;
   }
   28%,
