@@ -1,6 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useUser } from "../contexts/UserContext";
 import "../css/Footer.css";
+import brandLogo from "../assets/mmax-stream-logo.svg";
 
 const FOOTER_LINKS = [
   { label: "Home", to: "/" },
@@ -20,7 +21,7 @@ function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-brand-block">
-          <div className="footer-logo-text">mmax.stream</div>
+          <img src={brandLogo} alt="MMAX.STREAM" className="footer-brand-logo" />
           <span className="footer-tagline">Your screen. Your story.</span>
           <span className="footer-user">Hi, {user.name}</span>
         </div>

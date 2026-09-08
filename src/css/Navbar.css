@@ -85,6 +85,14 @@
   transition: transform 0.3s ease;
 }
 
+.brand-logo-image {
+  display: block;
+  width: clamp(150px, 14vw, 224px);
+  height: auto;
+  max-height: 42px;
+  object-fit: contain;
+}
+
 .mmax-logo-combined {
   display: flex;
   align-items: center;
@@ -130,6 +138,11 @@
 }
 
 @media (max-width: 600px) {
+  .brand-logo-image {
+    width: 156px;
+    max-height: 34px;
+  }
+
   .navbar > .navbar-logo .logo-m {
     width: 28px;
     height: 28px;

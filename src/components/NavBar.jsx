@@ -4,6 +4,7 @@ import "../css/Navbar.css";
 import MovieCard from "./MovieCard";
 import MovieModal from "./MovieModal";
 import { searchMovies } from "../services/api";
+import brandLogo from "../assets/mmax-stream-logo.svg";
 
 const NAV_LINKS = [
   { label: "Home", to: "/" },
@@ -126,10 +127,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
       <nav className={`navbar ${isAtTop ? "is-at-top" : !isScrolled ? "is-liquid" : "is-scrolled"} ${mobileMenuOpen ? "is-menu-open" : ""} ${searchExpanding ? "search-animating" : ""}`}>
         {/* ── Logo ── */}
         <Link to="/" className="navbar-logo" onClick={handleLinkClick} tabIndex={-1}>
-          <span className="mmax-logo-combined">
-            <span className="logo-m">m</span>
-            <span className="logo-text">max.stream</span>
-          </span>
+          <img src={brandLogo} alt="MMAX.STREAM" className="brand-logo-image" />
         </Link>
 
         {/* ── Navigation Links (Desktop) ── */}
@@ -190,10 +188,7 @@ function NavBar({ onSearch, isScrolled, isAtTop }) {
         >
           <div className="mobile-nav-header">
             <Link to="/" className="navbar-logo" onClick={handleLinkClick} tabIndex={-1}>
-              <span className="mmax-logo-combined">
-                <span className="logo-m">m</span>
-                <span className="logo-text">max.stream</span>
-              </span>
+              <img src={brandLogo} alt="MMAX.STREAM" className="brand-logo-image" />
             </Link>
             <button
               className="mobile-menu-close"

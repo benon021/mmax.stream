@@ -249,11 +249,14 @@
 
 .landing-hero h1 {
   margin: 0 0 1.5rem;
-  font-size: clamp(4rem, 10vw, 8.5rem);
   line-height: 0.95;
-  font-weight: 950;
-  letter-spacing: -0.075em;
-  color: #ffffff;
+}
+
+.landing-brand-logo {
+  display: block;
+  width: min(720px, 88vw);
+  height: auto;
+  margin: 0 auto;
 }
 
 .landing-hero h1 span {

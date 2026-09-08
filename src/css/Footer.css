@@ -29,6 +29,12 @@
   letter-spacing: -1px;
 }
 
+.footer-brand-logo {
+  display: block;
+  width: min(230px, 100%);
+  height: auto;
+}
+
 .footer-logo-pill {
   display: inline-block;
   background: linear-gradient(135deg, var(--accent), var(--accent-green));

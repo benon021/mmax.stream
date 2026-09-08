@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 160" role="img" aria-labelledby="title desc">
+  <title id="title">MMAX.STREAM</title>
+  <desc id="desc">MMAX.STREAM streaming service logo</desc>
+  <g font-family="Arial Black, Arial, sans-serif" font-size="94" font-weight="900" letter-spacing="-4">
+    <text x="8" y="112" fill="#ed1c24">MMAX</text>
+    <circle cx="286" cy="112" r="9" fill="#ed1c24" />
+    <text x="305" y="112" fill="#f4f4f4">STREAM</text>
+  </g>
+  <path d="M573 66 608 88 573 110Z" fill="#ed1c24" stroke="#0a0a0a" stroke-width="5" stroke-linejoin="round" />
+</svg>

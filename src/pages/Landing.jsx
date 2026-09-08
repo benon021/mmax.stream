@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/Landing.css";
+import brandLogo from "../assets/mmax-stream-logo.svg";
 
 const HERO_BACKDROP_IMAGES = [
   "https://image.tmdb.org/t/p/original/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
@@ -288,7 +289,7 @@ function Landing() {
 
         <div className="hero-content">
           <h1 className="animate-fade-up">
-            mmax<span>.stream</span>
+            <img src={brandLogo} alt="MMAX.STREAM" className="landing-brand-logo" />
           </h1>
 
           <p className="hero-tagline animate-fade-up delay-1">
