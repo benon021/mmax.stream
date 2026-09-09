@@ -80,13 +80,74 @@
 
 /* ── Logo ── */
 .navbar-logo {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 13px;
+  overflow: hidden;
   text-decoration: none;
   z-index: 2100;
-  transition: transform 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 18px 11px 18px 11px;
+  background:
+    radial-gradient(circle at 16% 0%, rgba(255, 114, 0, 0.18), transparent 48%),
+    radial-gradient(circle at 92% 100%, rgba(237, 28, 36, 0.16), transparent 52%),
+    rgba(8, 9, 10, 0.78);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -10px 20px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px) saturate(145%);
+  -webkit-backdrop-filter: blur(14px) saturate(145%);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.navbar-logo::before,
+.navbar-logo::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(13px);
+  opacity: 0.5;
+  transition: transform 0.45s ease, opacity 0.3s ease;
+}
+
+.navbar-logo::before {
+  width: 42px;
+  height: 26px;
+  left: 10px;
+  top: -14px;
+  background: rgba(255, 114, 0, 0.4);
+}
+
+.navbar-logo::after {
+  width: 48px;
+  height: 24px;
+  right: 8px;
+  bottom: -15px;
+  background: rgba(237, 28, 36, 0.32);
+}
+
+.navbar-logo:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 150, 90, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 10px 28px rgba(0, 0, 0, 0.34),
+    0 0 22px rgba(255, 80, 30, 0.12);
+}
+
+.navbar-logo:hover::before,
+.navbar-logo:hover::after {
+  opacity: 0.75;
+  transform: scale(1.25);
 }
 
 .brand-logo-image {
   display: block;
+  position: relative;
+  z-index: 1;
   width: clamp(150px, 14vw, 224px);
   height: auto;
   max-height: 42px;
@@ -141,6 +202,11 @@
   .brand-logo-image {
     width: 156px;
     max-height: 34px;
+  }
+
+  .navbar-logo {
+    padding: 5px 9px;
+    border-radius: 15px 9px 15px 9px;
   }
 
   .navbar > .navbar-logo .logo-m {
