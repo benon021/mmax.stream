@@ -96,6 +96,18 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   const [isPlayerServerOpen, setIsPlayerServerOpen] = useState(false);
   const [animeAudio, setAnimeAudio] = useState("dub"); // "dub" | "sub" (unified audio preference)
   const [hiAnimeEpisodes, setHiAnimeEpisodes] = useState([]);
+  const [showDubPermissionPopup, setShowDubPermissionPopup] = useState(false);
+  
+  const handleAudioChange = (newAudio) => {
+    setAnimeAudio(newAudio);
+    setIsVideoLoading(true);
+    if (newAudio === "dub") {
+      const acknowledged = localStorage.getItem("mmax_dub_permission_acknowledged");
+      if (!acknowledged) {
+        setShowDubPermissionPopup(true);
+      }
+    }
+  };
   
   const modalOverlayRef = useRef(null);
   const iframeRef = useRef(null);
@@ -111,6 +123,19 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     return false;
   }, [currentMovie, fullDetails]);
   const mediaType = isTV ? "tv" : "movie";
+
+  // Check if browser permission popup should be displayed for dubbed anime
+  useEffect(() => {
+    if (isAnime && animeAudio === "dub") {
+      const acknowledged = localStorage.getItem("mmax_dub_permission_acknowledged");
+      if (!acknowledged) {
+        const timer = setTimeout(() => {
+          setShowDubPermissionPopup(true);
+        }, 800);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isAnime, animeAudio]);
 
   // Reset trailer states when movie changes
   useEffect(() => {
@@ -657,10 +682,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     <button
                       type="button"
                       className={`anime-audio-btn ${animeAudio === "dub" ? "active" : ""}`}
-                      onClick={() => {
-                        setAnimeAudio("dub");
-                        setIsVideoLoading(true);
-                      }}
+                      onClick={() => handleAudioChange("dub")}
                       title="English / Multi-language dubbed audio"
                     >
                       <span>DUB</span>
@@ -668,13 +690,21 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     <button
                       type="button"
                       className={`anime-audio-btn ${animeAudio === "sub" ? "active" : ""}`}
-                      onClick={() => {
-                        setAnimeAudio("sub");
-                        setIsVideoLoading(true);
-                      }}
+                      onClick={() => handleAudioChange("sub")}
                       title="Japanese audio with English subtitles"
                     >
                       <span>SUB</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="anime-audio-help-btn"
+                      onClick={() => setShowDubPermissionPopup(true)}
+                      title="Make sure 'Apps on device' is live for Dubbed anime"
+                      aria-label="Dub permission instructions"
+                    >
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                      </svg>
                     </button>
                   </div>
                 )}
@@ -800,10 +830,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     <button 
                       type="button"
                       className={`pref-btn ${animeAudio === 'dub' ? 'active' : ''}`}
-                      onClick={() => {
-                        setAnimeAudio('dub');
-                        setIsVideoLoading(true);
-                      }}
+                      onClick={() => handleAudioChange('dub')}
                       title="English / Multi-language dubbed audio"
                     >
                       DUB
@@ -811,13 +838,21 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     <button 
                       type="button"
                       className={`pref-btn ${animeAudio === 'sub' ? 'active' : ''}`}
-                      onClick={() => {
-                        setAnimeAudio('sub');
-                        setIsVideoLoading(true);
-                      }}
+                      onClick={() => handleAudioChange('sub')}
                       title="Japanese audio with English subtitles"
                     >
                       SUB
+                    </button>
+                    <button
+                      type="button"
+                      className="anime-audio-help-btn overview"
+                      onClick={() => setShowDubPermissionPopup(true)}
+                      title="Make sure 'Apps on device' is live for Dubbed anime"
+                      aria-label="Dub permission instructions"
+                    >
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                      </svg>
                     </button>
                   </div>
                 )}
@@ -1403,6 +1438,75 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
           </div>
         </div>
       </div>
+
+      {/* Dubbed Anime Browser Permission Toast / Popup */}
+      {showDubPermissionPopup && (
+        <aside className="dub-permission-toast" role="dialog" aria-labelledby="dub-popup-title" aria-modal="true">
+          <button
+            type="button"
+            className="dub-permission-close-btn"
+            onClick={() => setShowDubPermissionPopup(false)}
+            aria-label="Close dub setup popup"
+          >
+            ✕
+          </button>
+
+          <div className="dub-permission-header">
+            <span className="dub-permission-kicker">🎙️ DUBBED ANIME STREAM SETUP</span>
+            <h3 id="dub-popup-title" className="dub-permission-title">
+              Make sure &ldquo;Apps on device&rdquo; is Live
+            </h3>
+            <p className="dub-permission-desc">
+              In browsers like <strong>Brave</strong>, <strong>Chrome</strong>, and <strong>Edge</strong>, click the <strong>lock icon (🔒)</strong> in your address bar and make sure <strong>Apps on device</strong> is toggled <strong>ON</strong> so dubbed anime streams load properly:
+            </p>
+          </div>
+
+          {/* Visual Recreation of Browser Permission Popup */}
+          <div className="browser-permission-card" aria-hidden="true">
+            <div className="b-perm-row">
+              <div className="b-perm-left">
+                <svg className="b-perm-icon" viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                  <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                </svg>
+                <span>Connection is secure</span>
+              </div>
+              <span className="b-perm-chevron">›</span>
+            </div>
+
+            <div className="b-perm-divider"></div>
+
+            <div className="b-perm-row active-highlight">
+              <div className="b-perm-left">
+                <svg className="b-perm-icon device-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                  <path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7l-2 3v1h8v-1l-2-3h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 12H3V4h18v10z"/>
+                </svg>
+                <span className="b-perm-label">Apps on device</span>
+              </div>
+              <div className="b-perm-toggle live">
+                <div className="b-perm-toggle-knob"></div>
+              </div>
+            </div>
+
+            <div className="b-perm-btn-row">
+              <span className="b-perm-reset-pill">Reset permission</span>
+              <span className="b-perm-status-tag">ACTIVE / LIVE</span>
+            </div>
+          </div>
+
+          <div className="dub-permission-actions">
+            <button
+              type="button"
+              className="dub-permission-confirm-btn"
+              onClick={() => {
+                localStorage.setItem("mmax_dub_permission_acknowledged", "true");
+                setShowDubPermissionPopup(false);
+              }}
+            >
+              ✓ Got It, It&apos;s Live
+            </button>
+          </div>
+        </aside>
+      )}
     </div>,
     document.body
   );
