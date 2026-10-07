@@ -2628,3 +2628,168 @@
   color: #bbbbbb !important;
   margin: 0 !important;
 }
+
+/* ── Streaming Server Help Popup (Floating Toast) ────────── */
+.server-help-popup {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 6050;
+  width: min(92vw, 380px);
+  background: rgba(14, 14, 16, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 114, 0, 0.38);
+  border-radius: 16px;
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.88), 0 0 24px rgba(255, 114, 0, 0.15);
+  color: #ffffff;
+  animation: serverHelpSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes serverHelpSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.server-help-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1;
+  padding: 0;
+}
+
+.server-help-close:hover {
+  background: #ff7200;
+  border-color: #ff7200;
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.server-help-header {
+  padding-right: 24px;
+}
+
+.server-help-kicker {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff7200;
+  margin-bottom: 4px;
+}
+
+.server-help-popup h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 6px 0;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.server-help-popup p {
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0 0 14px 0;
+  line-height: 1.42;
+}
+
+.server-help-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.server-help-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.server-help-btn:hover {
+  background: rgba(255, 114, 0, 0.15);
+  border-color: rgba(255, 114, 0, 0.6);
+  color: #ff7200;
+  transform: translateY(-1px);
+}
+
+.server-help-btn.active {
+  background: rgba(255, 114, 0, 0.22);
+  border-color: #ff7200;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(255, 114, 0, 0.28);
+}
+
+.server-btn-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.server-help-btn.active .server-btn-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.server-btn-name {
+  flex: 1;
+  text-align: left;
+  margin-left: 8px;
+}
+
+.server-btn-check {
+  color: #22c55e;
+  font-weight: 900;
+  font-size: 0.85rem;
+  margin-left: 4px;
+}
+
+.server-help-toggle-btn.active {
+  border-color: #ff7200 !important;
+  color: #ff7200 !important;
+  background: rgba(255, 114, 0, 0.15) !important;
+}
+
+@media (max-width: 600px) {
+  .server-help-popup {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    padding: 1rem 1.15rem;
+  }
+}

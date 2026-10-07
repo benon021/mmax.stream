@@ -95,17 +95,20 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = isServerHelpOpen ? "auto" : "hidden";
+    document.body.style.overflow = "hidden";
 
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [isServerHelpOpen]);
+  }, []);
 
   useEffect(() => {
-    if (!isPlaying) return undefined;
+    if (!isPlaying) {
+      setIsServerHelpOpen(false);
+      return undefined;
+    }
 
-    const timer = setTimeout(() => setIsServerHelpOpen(true), 8000);
+    const timer = setTimeout(() => setIsServerHelpOpen(true), 10000);
     return () => clearTimeout(timer);
   }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode]);
 
@@ -442,21 +445,26 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
               className="server-help-close"
               onClick={() => setIsServerHelpOpen(false)}
               aria-label="Close server help"
+              title="Close help"
             >
               ✕
             </button>
-            <span className="server-help-kicker">Playback help</span>
-            <h2>Can&apos;t find the movie?</h2>
-            <p>Try another server. One of these options may load the title better.</p>
+            <div className="server-help-header">
+              <span className="server-help-kicker">Playback help</span>
+              <h2>Can&apos;t find the {isAnime ? "anime" : isTV ? "show" : "movie"}?</h2>
+              <p>Try another server. One of these options may load the title better.</p>
+            </div>
             <div className="server-help-options">
               {SOURCES.slice(0, 4).map((source, index) => (
                 <button
                   type="button"
                   key={source.id}
-                  className={currentSourceIndex === index ? "active" : ""}
+                  className={`server-help-btn ${currentSourceIndex === index ? "active" : ""}`}
                   onClick={() => handleServerHelpSelect(index)}
                 >
-                  {source.name}
+                  <span className="server-btn-dot" aria-hidden="true" />
+                  <span className="server-btn-name">{source.name}</span>
+                  {currentSourceIndex === index && <span className="server-btn-check">✓</span>}
                 </button>
               ))}
             </div>
@@ -512,6 +520,18 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
                   </svg>
                   <span>Pause / Info</span>
+                </button>
+                <button 
+                  className={`modal-btn secondary server-help-toggle-btn ${isServerHelpOpen ? "active" : ""}`}
+                  onClick={() => setIsServerHelpOpen((prev) => !prev)}
+                  title="Switch streaming server"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                    <rect x="2" y="3" width="20" height="14" rx="2" />
+                    <line x1="8" y1="21" x2="16" y2="21" />
+                    <line x1="12" y1="17" x2="12" y2="21" />
+                  </svg>
+                  <span>Server ({currentSource.name})</span>
                 </button>
                 <button 
                   className={`modal-btn secondary fav-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
