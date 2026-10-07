@@ -1,0 +1,92 @@
+/* ── Endless Media Grid ──────────────────────── */
+.endless-media-section {
+  width: 100%;
+  padding: 1.5rem clamp(1rem, 3.5vw, 3rem) 5rem;
+  background: var(--bg-light);
+  min-height: 80vh;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.endless-media-section:active {
+  cursor: grabbing;
+}
+
+.endless-media-section .movie-card-wrapper {
+  cursor: pointer;
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
+.endless-media-section .movies-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 1.25rem;
+}
+
+@media (max-width: 1200px) {
+  .endless-media-section .movies-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .endless-media-section .movies-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 0.85rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .endless-media-section {
+    padding: 1rem 1rem 3.5rem;
+  }
+  .endless-media-section .movies-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.65rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .endless-media-section {
+    padding: 0.75rem 0.6rem 3rem;
+  }
+  .endless-media-section .movies-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.5rem;
+  }
+}
+
+/* Skeleton loader cards */
+.endless-skeleton-card {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #141414;
+}
+
+.endless-skeleton-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #151515 25%, #232323 50%, #151515 75%);
+  background-size: 200% 100%;
+  animation: endlessShimmer 1.4s infinite ease-in-out;
+}
+
+@keyframes endlessShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.endless-sentinel {
+  height: 40px;
+  margin-top: 2rem;
+  pointer-events: none;
+}

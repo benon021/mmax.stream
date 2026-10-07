@@ -5,43 +5,43 @@ import brandLogo from "../assets/mmax-stream-logo.svg";
 import { getPopularMovies } from "../services/api";
 
 const DEFAULT_POSTERS_COL1 = [
-  "https://image.tmdb.org/t/p/w500/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
-  "https://image.tmdb.org/t/p/w500/ijw98f8kS3NqfV9iYq5fB3QzX6Z.jpg",
-  "https://image.tmdb.org/t/p/w500/9cxWwz2m5q75Wd99Lq1oB6t1d5m.jpg",
-  "https://image.tmdb.org/t/p/w500/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
-  "https://image.tmdb.org/t/p/w500/iADOJ8Zymht2JPMoy3R7xUMZ51f.jpg",
-  "https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
+  "https://image.tmdb.org/t/p/w342/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg",
+  "https://image.tmdb.org/t/p/w342/ijw98f8kS3NqfV9iYq5fB3QzX6Z.jpg",
+  "https://image.tmdb.org/t/p/w342/9cxWwz2m5q75Wd99Lq1oB6t1d5m.jpg",
+  "https://image.tmdb.org/t/p/w342/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
+  "https://image.tmdb.org/t/p/w342/iADOJ8Zymht2JPMoy3R7xUMZ51f.jpg",
+  "https://image.tmdb.org/t/p/w342/d5NXSklXo0qyIYkgV94XAgMIckC.jpg",
 ];
 
 const DEFAULT_POSTERS_COL2 = [
-  "https://image.tmdb.org/t/p/w500/jwoaKyVqPgqR5X9xQ9a5y4e8b3b.jpg",
-  "https://image.tmdb.org/t/p/w500/pjnD08FlMAIXsfOLKQbvmO0f0MD.jpg",
-  "https://image.tmdb.org/t/p/w500/b33nnKl1GSFbao8l3fZkyRdfPQA.jpg",
-  "https://image.tmdb.org/t/p/w500/7WsyChvgrmaOO0F7n7rlPBDqUvm.jpg",
-  "https://image.tmdb.org/t/p/w500/8OhuLSlqJ0hT0bL02g8WkYm2h3H.jpg",
+  "https://image.tmdb.org/t/p/w342/jwoaKyVqPgqR5X9xQ9a5y4e8b3b.jpg",
+  "https://image.tmdb.org/t/p/w342/pjnD08FlMAIXsfOLKQbvmO0f0MD.jpg",
+  "https://image.tmdb.org/t/p/w342/b33nnKl1GSFbao8l3fZkyRdfPQA.jpg",
+  "https://image.tmdb.org/t/p/w342/7WsyChvgrmaOO0F7n7rlPBDqUvm.jpg",
+  "https://image.tmdb.org/t/p/w342/8OhuLSlqJ0hT0bL02g8WkYm2h3H.jpg",
 ];
 
 const DEFAULT_POSTERS_COL3 = [
-  "https://image.tmdb.org/t/p/w500/hA2ple9q4qnwxp3hKVNhroipsir.jpg",
-  "https://image.tmdb.org/t/p/w500/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg",
-  "https://image.tmdb.org/t/p/w500/nP6RliHjxsz4irTKsxe8FRhKZYl.jpg",
-  "https://image.tmdb.org/t/p/w500/hU1Q9YVzdYolferIA84GpH6i072.jpg",
-  "https://image.tmdb.org/t/p/w500/gKkl37BQuKTanygYQG1pyYgLVgf.jpg",
+  "https://image.tmdb.org/t/p/w342/hA2ple9q4qnwxp3hKVNhroipsir.jpg",
+  "https://image.tmdb.org/t/p/w342/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg",
+  "https://image.tmdb.org/t/p/w342/nP6RliHjxsz4irTKsxe8FRhKZYl.jpg",
+  "https://image.tmdb.org/t/p/w342/hU1Q9YVzdYolferIA84GpH6i072.jpg",
+  "https://image.tmdb.org/t/p/w342/gKkl37BQuKTanygYQG1pyYgLVgf.jpg",
 ];
 
 const DEFAULT_MIDDLE_POOL = [
-  "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
-  "https://image.tmdb.org/t/p/w500/r2J02Z2OpNTctfOSN2Ydgii51xQ.jpg",
-  "https://image.tmdb.org/t/p/w500/saHpda7mgrPlvBwKYgCw9ZsNeNu.jpg",
-  "https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
-  "https://image.tmdb.org/t/p/w500/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg",
-  "https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg",
-  "https://image.tmdb.org/t/p/w500/7IIBsTF7XKQIWaP392vvd6Te095.jpg",
-  "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-  "https://image.tmdb.org/t/p/w500/5KCVkau1HEl7ZzfPsKAPM0sMiKc.jpg",
-  "https://image.tmdb.org/t/p/w500/6oom5QYQ2yQTMJIbnvbkBL9cDK6.jpg",
-  "https://image.tmdb.org/t/p/w500/velWPhVMQeQKcxggNEU8YmIo52R.jpg",
-  "https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
+  "https://image.tmdb.org/t/p/w342/qJ2tW6WMUDux911r6m7haRef0WH.jpg",
+  "https://image.tmdb.org/t/p/w342/r2J02Z2OpNTctfOSN2Ydgii51xQ.jpg",
+  "https://image.tmdb.org/t/p/w342/saHpda7mgrPlvBwKYgCw9ZsNeNu.jpg",
+  "https://image.tmdb.org/t/p/w342/3bhkrj58Vtu7enYsRolD1fZdja1.jpg",
+  "https://image.tmdb.org/t/p/w342/kDp1vUBnMpe8ak4rjgl3cLELqjU.jpg",
+  "https://image.tmdb.org/t/p/w342/or06FN3Dka5tukK1e9sl16pB3iy.jpg",
+  "https://image.tmdb.org/t/p/w342/7IIBsTF7XKQIWaP392vvd6Te095.jpg",
+  "https://image.tmdb.org/t/p/w342/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+  "https://image.tmdb.org/t/p/w342/5KCVkau1HEl7ZzfPsKAPM0sMiKc.jpg",
+  "https://image.tmdb.org/t/p/w342/6oom5QYQ2yQTMJIbnvbkBL9cDK6.jpg",
+  "https://image.tmdb.org/t/p/w342/velWPhVMQeQKcxggNEU8YmIo52R.jpg",
+  "https://image.tmdb.org/t/p/w342/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg",
 ];
 
 function Landing() {
@@ -51,7 +51,7 @@ function Landing() {
   const [middlePool, setMiddlePool] = useState(DEFAULT_MIDDLE_POOL);
   const [blinkingSlot, setBlinkingSlot] = useState(null);
   const poolIndexRef = useRef(0);
-  const slotIndexRef = useRef(0);
+  const lastBlinkedSlotRef = useRef(-1);
 
   useEffect(() => {
     let cancelled = false;
@@ -66,7 +66,7 @@ function Landing() {
         for (const m of allMovies) {
           if (m?.poster_path && !seen.has(m.poster_path)) {
             seen.add(m.poster_path);
-            uniquePosters.push("https://image.tmdb.org/t/p/w500" + m.poster_path);
+            uniquePosters.push("https://image.tmdb.org/t/p/w342" + m.poster_path);
           }
         }
 
@@ -84,43 +84,58 @@ function Landing() {
     };
   }, []);
 
-  // Preload middle pool posters into browser cache
-  useEffect(() => {
-    middlePool.forEach((url) => {
-      const img = new Image();
-      img.src = url;
-    });
-  }, [middlePool]);
-
-  // Periodic fade in / fade out (blink) image transition for the middle column cards
+  // Preload upcoming pool posters progressively (only 2 at a time) to prevent network choking
   useEffect(() => {
     if (!middlePool || middlePool.length === 0) return;
+    const nextIdx = poolIndexRef.current % middlePool.length;
+    const toPreload = [middlePool[nextIdx], middlePool[(nextIdx + 1) % middlePool.length]];
+    toPreload.forEach((url) => {
+      if (url) {
+        const img = new Image();
+        img.src = url;
+      }
+    });
+  }, [middlePool, col2Posters]);
+
+  // Periodic random, organic dissolve transition for middle column cards (no predictable order)
+  useEffect(() => {
+    if (!middlePool || middlePool.length === 0 || col2Posters.length === 0) return;
 
     let swapTimer = null;
     let endTimer = null;
 
-    const interval = setInterval(() => {
-      const slotToBlink = slotIndexRef.current % col2Posters.length;
-      slotIndexRef.current += 1;
+    const runRandomDissolve = () => {
+      // Pick a random card slot that wasn't the last one that transitioned
+      const candidateSlots = col2Posters
+        .map((_, idx) => idx)
+        .filter((idx) => idx !== lastBlinkedSlotRef.current);
+      const chosenSlot =
+        candidateSlots.length > 0
+          ? candidateSlots[Math.floor(Math.random() * candidateSlots.length)]
+          : 0;
 
-      setBlinkingSlot(slotToBlink);
+      lastBlinkedSlotRef.current = chosenSlot;
+      setBlinkingSlot(chosenSlot);
 
-      // Midpoint of blink (380ms): swap image while faded out
+      // Midpoint of smooth fade (600ms): swap image while fully dissolved
       swapTimer = setTimeout(() => {
         setCol2Posters((currentPosters) => {
-          const nextPosters = [...currentPosters];
+          const next = [...currentPosters];
           const poolItem = middlePool[poolIndexRef.current % middlePool.length];
-          poolIndexRef.current += 1;
-          nextPosters[slotToBlink] = poolItem;
-          return nextPosters;
+          poolIndexRef.current = (poolIndexRef.current + 1) % middlePool.length;
+          next[chosenSlot] = poolItem;
+          return next;
         });
-      }, 380);
+      }, 600);
 
-      // Animation complete (850ms): reset blink state
+      // Transition complete (1300ms): smoothly return to visible
       endTimer = setTimeout(() => {
         setBlinkingSlot(null);
-      }, 850);
-    }, 2400);
+      }, 1300);
+    };
+
+    // Organic interval: 3.2 seconds
+    const interval = setInterval(runRandomDissolve, 3200);
 
     return () => {
       clearInterval(interval);

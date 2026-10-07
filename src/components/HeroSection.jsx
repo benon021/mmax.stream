@@ -228,12 +228,7 @@ return (
         </div>
       </div>
 
-      <div className="hero-right-controls">
-        <div className="hero-netflix-pill-badge">
-          <span className="hero-badge-icon" aria-hidden="true">📅</span>
-          <span>Top 10 Today</span>
-        </div>
-      </div>
+
 
       
 

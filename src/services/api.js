@@ -5,7 +5,7 @@ const BASE_URL = "https://api.themoviedb.org/3";
 export const getPopularMovies = async (page = 1) => {
   const res = await fetch(`${BASE_URL}/movie/popular?api_key=${API_KEY}&language=en-US&page=${page}`);
   const data = await res.json();
-  return data.results;
+  return (data.results || []).filter((item) => item.poster_path || item.backdrop_path);
 };
 
 export const searchMovies = async (query) => {
@@ -41,7 +41,7 @@ export const getTrendingAll = async (timeWindow = "day", page = 1) => {
 export const getPopularTV = async (page = 1) => {
   const res = await fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}&page=${page}`);
   const data = await res.json();
-  return data.results;
+  return (data.results || []).filter((item) => item.poster_path || item.backdrop_path);
 };
 
 export const getMoviesInTheatres = async () => {
@@ -267,10 +267,10 @@ const JAPAN_LANG = "ja";
 
 export const getPopularAnime = async (page = 1) => {
   const res = await fetch(
-    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=popularity.desc&language=en-US&page=${page}`
+    `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=popularity.desc&vote_count.gte=30&language=en-US&page=${page}`
   );
   const data = await res.json();
-  return data.results;
+  return (data.results || []).filter((item) => item.poster_path || item.backdrop_path);
 };
 
 export const getTrendingAnime = async (page = 1) => {

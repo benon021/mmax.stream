@@ -1,46 +1,10 @@
-/*  */import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import HeroSection from "../components/HeroSection";
-import MovieRow from "../components/MovieRow";
+import EndlessMediaGrid from "../components/EndlessMediaGrid";
 import MovieCard from "../components/MovieCard";
-import {
-  getTrendingAll,
-  getPopularMovies,
-  getPopularTV,
-  getMoviesInTheatres,
-  getMoviesForRent,
-  getFreeMovies,
-  getFreeTV,
-  getTopRatedMovies,
-  searchMovies,
-} from "../services/api";
-import { getAllProgress } from "../services/progress";
+import { getPopularMovies, searchMovies } from "../services/api";
 import "../css/Home.css";
-
-
-
-// Tab configs — defined outside component so references are stable
-const trendingTabs = [
-  { label: "Today", fetchFn: (page) => getTrendingAll("day", page) },
-  { label: "This Week", fetchFn: (page) => getTrendingAll("week", page) },
-];
-
-const popularTabs = [
-  { label: "Streaming", fetchFn: getPopularMovies },
-  { label: "On TV", fetchFn: getPopularTV },
-  { label: "For Rent", fetchFn: getMoviesForRent },
-  { label: "In Theatres", fetchFn: getMoviesInTheatres },
-];
-
-const freeTabs = [
-  { label: "Movies", fetchFn: getFreeMovies },
-  { label: "TV", fetchFn: getFreeTV },
-];
-
-const continueWatchingTabs = [
-  { label: "Recent", fetchFn: async () => getAllProgress() },
-];
-
 
 function Home() {
   const navigate = useNavigate();
@@ -51,6 +15,7 @@ function Home() {
   const [lastQuery, setLastQuery] = useState(searchQuery || "");
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState(null);
+
   const handleSearch = useCallback(async (query) => {
     if (!query) {
       setSearchResults(null);
@@ -141,21 +106,9 @@ function Home() {
         </div>
       )}
 
-      {/* Sections (hidden during search) */}
+      {/* Endless drag of movies (replaces categorized rows) */}
       {!isSearchPage && (
-        <>
-          <div className="section-content">
-            <MovieRow title="Continue Watching" tabs={continueWatchingTabs} layout="grid" />
-            <MovieRow title="Trending" tabs={trendingTabs} layout="grid" />
-            <MovieRow title="What's Popular" tabs={popularTabs} layout="grid" />
-            <MovieRow title="Free To Watch" tabs={freeTabs} layout="grid" />
-            <MovieRow
-              title="Top Rated"
-              tabs={[{ label: "Movies", fetchFn: getTopRatedMovies }]}
-              layout="grid"
-            />
-          </div>
-        </>
+        <EndlessMediaGrid fetchFn={getPopularMovies} mediaType="movie" />
       )}
     </div>
   );

@@ -218,38 +218,26 @@
   position: relative;
 }
 
-/* Trailer overlay controls & badge */
-.trailer-badge-pill {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 30;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(10, 10, 10, 0.78);
-  border: 1px solid rgba(255, 114, 0, 0.45);
-  color: #ff9133;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  pointer-events: none;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+/* Clean Trailer Mode: Crop out YouTube title bar, 'More videos', and external buttons */
+.movie-player-trailer-iframe {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  width: 124% !important;
+  height: 136% !important;
+  transform: translate(-50%, -50%) !important;
+  border: none !important;
+  pointer-events: auto !important;
 }
 
-.trailer-badge-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ff7200;
-  box-shadow: 0 0 8px #ff7200;
+@media (max-width: 640px) {
+  .movie-player-trailer-iframe {
+    width: 130% !important;
+    height: 142% !important;
+  }
 }
 
+/* Trailer skip overlay button */
 .skip-trailer-overlay-btn {
   position: absolute;
   bottom: 24px;
@@ -299,12 +287,6 @@
     right: 14px;
     padding: 8px 14px;
     font-size: 0.82rem;
-  }
-  .trailer-badge-pill {
-    top: 14px;
-    left: 14px;
-    padding: 4px 10px;
-    font-size: 0.7rem;
   }
 }
 
@@ -2411,6 +2393,111 @@
   background: #ff7200;
   border-color: #ff7200;
   color: #ffffff;
+}
+
+/* Inline Player Server Dropdown */
+.player-server-dropdown-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+
+.player-server-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  z-index: 100;
+  min-width: 190px;
+  background: rgba(18, 18, 22, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), 0 0 16px rgba(255, 114, 0, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  animation: playerDropdownSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes playerDropdownSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.player-server-dropdown-header {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #ff7200;
+  padding: 6px 10px 4px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 3px;
+}
+
+.player-server-dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #eaeaea;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.16s ease;
+}
+
+.player-server-dropdown-option:hover {
+  background: rgba(255, 114, 0, 0.18);
+  color: #ff8c33;
+}
+
+.player-server-dropdown-option.active {
+  background: rgba(255, 114, 0, 0.25);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.player-server-option-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background 0.2s ease;
+}
+
+.player-server-dropdown-option.active .player-server-option-indicator {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.player-server-option-name {
+  flex: 1;
+}
+
+.player-server-option-check {
+  color: #22c55e;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.player-server-chevron {
+  font-size: 0.72rem;
+  opacity: 0.75;
+  margin-left: 2px;
+  transition: transform 0.2s ease;
 }
 
 .player-details-summary {

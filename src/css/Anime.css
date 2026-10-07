@@ -1,7 +1,6 @@
 .anime-page {
-  padding-top: var(--nav-height);
   min-height: 100vh;
-  background-color: #050505;
+  background-color: var(--bg-light);
 }
 
 .anime-header {

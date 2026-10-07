@@ -298,15 +298,7 @@ function TVHeroSection() {
         </div>
       </div>
 
-      <div className="hero-right-controls">
-        <button className="mute-btn" onClick={() => setIsMuted(!isMuted)} aria-label="Toggle mute">
-          {isMuted ? "🔇" : "🔊"}
-        </button>
-        <div className="hero-netflix-pill-badge">
-          <span className="hero-badge-icon" aria-hidden="true">📅</span>
-          <span>Top 10 Today</span>
-        </div>
-      </div>
+
 
       {selectedShow && (
         <MovieModal 

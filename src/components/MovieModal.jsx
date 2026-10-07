@@ -45,7 +45,6 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   // State Declarations
   const [currentMovie, setCurrentMovie] = useState(movie);
   const [isPlaying, setIsPlaying] = useState(initialPlaying);
-  const [isServerHelpOpen, setIsServerHelpOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [episodes, setEpisodes] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
@@ -67,13 +66,14 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   const [trailerKey, setTrailerKey] = useState(null);
   const [playTrailerFirst, setPlayTrailerFirst] = useState(false);
   const [trailerStream, setTrailerStream] = useState(null);
-  const [isTrailerLoading, setIsTrailerLoading] = useState(false);
   const [activeBatchIndex, setActiveBatchIndex] = useState(0);
   const [episodeViewMode, setEpisodeViewMode] = useState("grid"); // "grid" | "list"
   const [episodeSearchQuery, setEpisodeSearchQuery] = useState("");
+  const [isPlayerServerOpen, setIsPlayerServerOpen] = useState(false);
   
   const modalOverlayRef = useRef(null);
   const iframeRef = useRef(null);
+  const playerServerDropdownRef = useRef(null);
 
   // Content type helper variables derived from currentMovie
   const isTV = currentMovie.media_type === "tv" || currentMovie.mediaType === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
@@ -85,19 +85,16 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     setTrailerKey(currentMovie.youtube_key || null);
     setPlayTrailerFirst(false);
     setTrailerStream(null);
-    setIsTrailerLoading(false);
   }, [currentMovie.id, currentMovie.youtube_key]);
 
   // Fetch clean direct stream via Vercel serverless function when trailer is triggered
   useEffect(() => {
     if (!playTrailerFirst || !trailerKey) {
       setTrailerStream(null);
-      setIsTrailerLoading(false);
       return;
     }
 
     let isMounted = true;
-    setIsTrailerLoading(true);
 
     fetch(`/api/trailer?id=${encodeURIComponent(trailerKey)}`)
       .then((res) => {
@@ -131,11 +128,6 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
           type: "embed",
           embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`,
         });
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsTrailerLoading(false);
-        }
       });
 
     return () => {
@@ -161,15 +153,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isPlaying) {
-      setIsServerHelpOpen(false);
-      return undefined;
-    }
 
-    const timer = setTimeout(() => setIsServerHelpOpen(true), 10000);
-    return () => clearTimeout(timer);
-  }, [isPlaying, currentMovie.id, selectedSeason, selectedEpisode]);
 
   // Set default streaming source: Alpha for movies, Gamma for anime
   useEffect(() => {
@@ -257,10 +241,6 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     modalOverlayRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleServerHelpSelect = (serverIndex) => {
-    setCurrentSourceIndex(serverIndex);
-    setIsServerHelpOpen(false);
-  };
 
   // Fetch Logic
   useEffect(() => {
@@ -475,6 +455,24 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // Smooth transition from trailer to full movie with zero flash of YouTube
+  const handleSkipTrailer = () => {
+    setIsVideoLoading(true);
+    setPlayTrailerFirst(false);
+  };
+
+  // Close player server dropdown on click outside
+  useEffect(() => {
+    if (!isPlayerServerOpen) return;
+    const handleClickOutside = (e) => {
+      if (playerServerDropdownRef.current && !playerServerDropdownRef.current.contains(e.target)) {
+        setIsPlayerServerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isPlayerServerOpen]);
+
   // Handle Video Source Change
   const currentSource = SOURCES[currentSourceIndex];
   const videoUrl = currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
@@ -496,49 +494,11 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
       >
         <button className="modal-close" onClick={handleClose} aria-label="Close modal" title="Close">✕</button>
 
-        {isServerHelpOpen && (
-          <div className="server-help-popup" role="dialog" aria-label="Change streaming server">
-            <button
-              className="server-help-close"
-              onClick={() => setIsServerHelpOpen(false)}
-              aria-label="Close server help"
-              title="Close help"
-            >
-              ✕
-            </button>
-            <div className="server-help-header">
-              <span className="server-help-kicker">Playback help</span>
-              <h2>Can&apos;t find the {isAnime ? "anime" : isTV ? "show" : "movie"}?</h2>
-              <p>Try another server. One of these options may load the title better.</p>
-            </div>
-            <div className="server-help-options">
-              {SOURCES.slice(0, 4).map((source, index) => (
-                <button
-                  type="button"
-                  key={source.id}
-                  className={`server-help-btn ${currentSourceIndex === index ? "active" : ""}`}
-                  onClick={() => handleServerHelpSelect(index)}
-                >
-                  <span className="server-btn-dot" aria-hidden="true" />
-                  <span className="server-btn-name">{source.name}</span>
-                  {currentSourceIndex === index && <span className="server-btn-check">✓</span>}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Netflix Pause Hero (when not playing) OR Active Player Section (when playing) */}
         {isPlaying ? (
           <div className="modal-player-section">
             <div className="player-wrapper-outer liquid-crystal">
               <div className="player-video-bg">
-                {playTrailerFirst && (
-                  <div className="trailer-badge-pill" aria-label="Official Trailer">
-                    <span className="trailer-badge-dot" />
-                    <span>{isTrailerLoading ? "CONNECTING DIRECT STREAM..." : "TRAILER PREVIEW"}</span>
-                  </div>
-                )}
 
                 {playTrailerFirst && trailerStream?.type === "direct" && trailerStream?.streamUrl ? (
                   <video
@@ -548,20 +508,32 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     autoPlay
                     playsInline
                     className="movie-player-trailer-video is-ready"
-                    onEnded={() => setPlayTrailerFirst(false)}
+                    onEnded={handleSkipTrailer}
                     onLoadedData={() => setIsVideoLoading(false)}
                     onPlaying={() => setIsVideoLoading(false)}
                     onWaiting={() => setIsVideoLoading(true)}
                   />
-                ) : (
+                ) : playTrailerFirst ? (
                   <iframe
+                    key={`trailer-iframe-${trailerKey}`}
                     ref={iframeRef}
                     src={
-                      playTrailerFirst
-                        ? (trailerStream?.embedUrl || `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`)
-                        : videoUrl
+                      trailerStream?.embedUrl ||
+                      `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`
                     }
-                    title={playTrailerFirst ? `${title} Trailer` : title}
+                    title={`${title} Trailer`}
+                    className={`movie-player-iframe movie-player-trailer-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
+                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                    allowFullScreen
+                    frameBorder="0"
+                    onLoad={() => setIsVideoLoading(false)}
+                  ></iframe>
+                ) : (
+                  <iframe
+                    key={`movie-iframe-${currentSource.id}-${currentMovie.id}-${selectedSeason}-${selectedEpisode}`}
+                    ref={iframeRef}
+                    src={videoUrl}
+                    title={title}
                     className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
                     allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
                     allowFullScreen
@@ -573,7 +545,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                 {playTrailerFirst && (
                   <button 
                     className="skip-trailer-overlay-btn"
-                    onClick={() => setPlayTrailerFirst(false)}
+                    onClick={handleSkipTrailer}
                     title={`Watch Full ${isAnime ? "Anime" : isTV ? "Show" : "Movie"}`}
                   >
                     <span>Watch Full {isAnime ? "Anime" : isTV ? "Show" : "Movie"}</span>
@@ -609,18 +581,48 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   </svg>
                   <span>Pause / Info</span>
                 </button>
-                <button 
-                  className={`modal-btn secondary server-help-toggle-btn ${isServerHelpOpen ? "active" : ""}`}
-                  onClick={() => setIsServerHelpOpen((prev) => !prev)}
-                  title="Switch streaming server"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
-                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                    <line x1="8" y1="21" x2="16" y2="21" />
-                    <line x1="12" y1="17" x2="12" y2="21" />
-                  </svg>
-                  <span>Server ({currentSource.name})</span>
-                </button>
+
+                <div className="player-server-dropdown-wrapper" ref={playerServerDropdownRef}>
+                  <button 
+                    className={`modal-btn secondary server-help-toggle-btn ${isPlayerServerOpen ? "active" : ""}`}
+                    onClick={() => setIsPlayerServerOpen((prev) => !prev)}
+                    title="Select streaming server"
+                    aria-expanded={isPlayerServerOpen}
+                    aria-haspopup="listbox"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                      <rect x="2" y="3" width="20" height="14" rx="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                    <span>Server ({currentSource.name})</span>
+                    <span className="player-server-chevron" aria-hidden="true">{isPlayerServerOpen ? "▴" : "▾"}</span>
+                  </button>
+
+                  {isPlayerServerOpen && (
+                    <div className="player-server-dropdown-menu" role="listbox" aria-label="Select streaming server">
+                      <div className="player-server-dropdown-header">Streaming Server</div>
+                      {SOURCES.slice(0, 4).map((source, index) => (
+                        <button
+                          key={source.id}
+                          type="button"
+                          role="option"
+                          aria-selected={currentSourceIndex === index}
+                          className={`player-server-dropdown-option ${currentSourceIndex === index ? "active" : ""}`}
+                          onClick={() => {
+                            setCurrentSourceIndex(index);
+                            setIsVideoLoading(true);
+                            setIsPlayerServerOpen(false);
+                          }}
+                        >
+                          <span className="player-server-option-indicator" />
+                          <span className="player-server-option-name">{source.name}</span>
+                          {currentSourceIndex === index && <span className="player-server-option-check">✓</span>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <button 
                   className={`modal-btn secondary fav-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
                   onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}

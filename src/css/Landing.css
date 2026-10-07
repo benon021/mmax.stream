@@ -233,10 +233,13 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   animation: marqueeUp 28s linear infinite;
 }
 
-/* Column 2: STILL (Static with blink fade effect) */
+/* Column 2: STILL (Static with smooth dissolve effect) */
 .col-still .vidlink-col-stream-still {
   display: flex;
   flex-direction: column;
@@ -245,34 +248,30 @@
 
 .vidlink-poster-card.middle-card {
   position: relative;
-  will-change: opacity, transform, filter;
+  will-change: opacity, transform;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .vidlink-poster-card.middle-card.is-blinking {
-  animation: posterBlinkFade 0.85s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: posterSmoothDissolve 1.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes posterBlinkFade {
+@keyframes posterSmoothDissolve {
   0% {
     opacity: 1;
     transform: scale(1);
-    filter: brightness(1);
   }
-  38% {
+  42% {
     opacity: 0.04;
     transform: scale(0.97);
-    filter: brightness(1.22);
   }
-  62% {
+  58% {
     opacity: 0.04;
     transform: scale(0.97);
-    filter: brightness(1.22);
   }
   100% {
     opacity: 1;
     transform: scale(1);
-    filter: brightness(1);
   }
 }
 
@@ -281,6 +280,9 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   animation: marqueeDown 28s linear infinite;
 }
 
