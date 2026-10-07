@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import "../css/MovieModal.css";
 import { getSeasonDetails, getMovieDetails, getSimilarContent } from "../services/api";
 import { getProgress, saveProgress } from "../services/progress";
+import { searchAnimeHiAnime, getHiAnimeEpisodes, getAnimeEmbedUrl, findBestAnimeMatch } from "../services/animeApi";
 
 const IMG_BASE_BACKDROP = "https://image.tmdb.org/t/p/original";
 const EPISODES_PER_BATCH = 25;
@@ -37,6 +38,30 @@ const SOURCES = [
   }
 ];
 
+// Dedicated Anime Servers (powered by local HiAnime scraper API + multi-server fallback)
+const ANIME_SOURCES = [
+  { 
+    id: "anime_hd", 
+    name: "MegaCloud (HD)", 
+    isAnime: true 
+  },
+  { 
+    id: "anime_flixera", 
+    name: "Flixera (Multi-Dub)", 
+    isAnime: true 
+  },
+  { 
+    id: "vidlink", 
+    name: "Alpha (VidLink)", 
+    getUrl: (id, isTV, s, e) => isTV ? `https://vidlink.pro/tv/${id}/${s}/${e}` : `https://vidlink.pro/movie/${id}` 
+  },
+  { 
+    id: "vidsrc", 
+    name: "Beta (VidSrc)", 
+    getUrl: (id, isTV, s, e) => isTV ? `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}` : `https://vidsrc.xyz/embed/movie/${id}` 
+  }
+];
+
 import { useMovieContext } from "../contexts/MovieContext";
 
 function MovieModal({ movie, onClose, initialPlaying = false }) {
@@ -62,7 +87,6 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   // default source index will be set dynamically based on content type
   const [currentSourceIndex, setCurrentSourceIndex] = useState(0);
   const [isServerOpen, setIsServerOpen] = useState(false);
-  const [dubPreference, setDubPreference] = useState("eng"); // default to english dub as requested
   const [trailerKey, setTrailerKey] = useState(null);
   const [playTrailerFirst, setPlayTrailerFirst] = useState(false);
   const [trailerStream, setTrailerStream] = useState(null);
@@ -70,6 +94,8 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   const [episodeViewMode, setEpisodeViewMode] = useState("grid"); // "grid" | "list"
   const [episodeSearchQuery, setEpisodeSearchQuery] = useState("");
   const [isPlayerServerOpen, setIsPlayerServerOpen] = useState(false);
+  const [animeAudio, setAnimeAudio] = useState("dub"); // "dub" | "sub" (unified audio preference)
+  const [hiAnimeEpisodes, setHiAnimeEpisodes] = useState([]);
   
   const modalOverlayRef = useRef(null);
   const iframeRef = useRef(null);
@@ -77,7 +103,13 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
 
   // Content type helper variables derived from currentMovie
   const isTV = currentMovie.media_type === "tv" || currentMovie.mediaType === "tv" || !!(currentMovie.name || currentMovie.first_air_date);
-  const isAnime = isTV && (currentMovie.genre_ids?.includes(16) || currentMovie.original_language === "ja");
+  const isAnime = useMemo(() => {
+    if (currentMovie.mediaType === "anime") return true;
+    if (currentMovie.genre_ids?.includes(16) && (currentMovie.original_language === "ja" || currentMovie.origin_country?.includes("JP"))) return true;
+    if (fullDetails?.genres?.some(g => g.id === 16) && (fullDetails?.original_language === "ja" || fullDetails?.origin_country?.includes("JP"))) return true;
+    if (typeof window !== "undefined" && window.location.pathname.includes("anime")) return true;
+    return false;
+  }, [currentMovie, fullDetails]);
   const mediaType = isTV ? "tv" : "movie";
 
   // Reset trailer states when movie changes
@@ -155,14 +187,35 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
 
 
 
-  // Set default streaming source: Alpha for movies, Gamma for anime
+  // Set default streaming source: 0 for both Anime (MegaCloud) and Movies/TV (Alpha)
   useEffect(() => {
-    if (isAnime) {
-      setCurrentSourceIndex(2); // Gamma
-    } else {
-      setCurrentSourceIndex(0); // Alpha
-    }
+    setCurrentSourceIndex(0);
   }, [isAnime, currentMovie.id]);
+
+  // Query local HiAnime API for anime episodes and stream manifests
+  useEffect(() => {
+    if (!isAnime || !currentMovie) return;
+    let cancelled = false;
+    const animeTitle = currentMovie.name || currentMovie.title || currentMovie.original_name || "";
+    if (!animeTitle) return;
+
+    searchAnimeHiAnime(animeTitle, selectedSeason)
+      .then(async (results) => {
+        if (cancelled || !results || results.length === 0) return;
+        const best = findBestAnimeMatch(results, animeTitle);
+        if (!best) return;
+        const eps = await getHiAnimeEpisodes(best.id);
+        if (cancelled || !eps || eps.length === 0) return;
+        setHiAnimeEpisodes(eps);
+      })
+      .catch((err) => {
+        console.warn("[Anime] Offline HiAnime load error:", err);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAnime, currentMovie, selectedSeason]);
 
   
   // Robust Data Sanitization - Solve "Unknown"
@@ -473,9 +526,26 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isPlayerServerOpen]);
 
-  // Handle Video Source Change
-  const currentSource = SOURCES[currentSourceIndex];
-  const videoUrl = currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
+  // Active source list based on whether content is anime
+  const activeSources = isAnime ? ANIME_SOURCES : SOURCES.slice(0, 4);
+  const currentSource = activeSources[currentSourceIndex] || activeSources[0];
+
+  // Dynamic Video Source Resolution
+  const videoUrl = useMemo(() => {
+    if (isAnime && currentSource?.isAnime && hiAnimeEpisodes.length > 0) {
+      const ep = hiAnimeEpisodes.find((item) => item.episodeNumber === selectedEpisode) || hiAnimeEpisodes[selectedEpisode - 1];
+      if (ep) {
+        return getAnimeEmbedUrl({
+          aniId: ep.aniId,
+          episodeId: ep.id || ep.embedId,
+          audio: animeAudio,
+          server: currentSource.id === "anime_flixera" ? "flixera" : "4animo",
+        });
+      }
+    }
+    const getUrlFn = currentSource?.getUrl || SOURCES[0].getUrl;
+    return getUrlFn(currentMovie.id, isTV, selectedSeason, selectedEpisode);
+  }, [isAnime, currentSource, hiAnimeEpisodes, selectedEpisode, selectedSeason, animeAudio, currentMovie.id, isTV]);
 
   return createPortal(
     <div
@@ -530,7 +600,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   ></iframe>
                 ) : (
                   <iframe
-                    key={`movie-iframe-${currentSource.id}-${currentMovie.id}-${selectedSeason}-${selectedEpisode}`}
+                    key={`movie-iframe-${currentSource.id}-${currentMovie.id}-${selectedSeason}-${selectedEpisode}-${animeAudio}`}
                     ref={iframeRef}
                     src={videoUrl}
                     title={title}
@@ -582,6 +652,33 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   <span>Pause / Info</span>
                 </button>
 
+                {isAnime && (
+                  <div className="anime-audio-switch-pill" role="group" aria-label="Audio language">
+                    <button
+                      type="button"
+                      className={`anime-audio-btn ${animeAudio === "dub" ? "active" : ""}`}
+                      onClick={() => {
+                        setAnimeAudio("dub");
+                        setIsVideoLoading(true);
+                      }}
+                      title="English / Multi-language dubbed audio"
+                    >
+                      <span>DUB</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`anime-audio-btn ${animeAudio === "sub" ? "active" : ""}`}
+                      onClick={() => {
+                        setAnimeAudio("sub");
+                        setIsVideoLoading(true);
+                      }}
+                      title="Japanese audio with English subtitles"
+                    >
+                      <span>SUB</span>
+                    </button>
+                  </div>
+                )}
+
                 <div className="player-server-dropdown-wrapper" ref={playerServerDropdownRef}>
                   <button 
                     className={`modal-btn secondary server-help-toggle-btn ${isPlayerServerOpen ? "active" : ""}`}
@@ -602,7 +699,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   {isPlayerServerOpen && (
                     <div className="player-server-dropdown-menu" role="listbox" aria-label="Select streaming server">
                       <div className="player-server-dropdown-header">Streaming Server</div>
-                      {SOURCES.slice(0, 4).map((source, index) => (
+                      {activeSources.map((source, index) => (
                         <button
                           key={source.id}
                           type="button"
@@ -699,16 +796,26 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                 </button>
                 
                 {isAnime && (
-                  <div className="anime-preference-toggle glass-btn">
+                  <div className="anime-preference-toggle glass-btn" role="group" aria-label="Audio language preference">
                     <button 
-                      className={`pref-btn ${dubPreference === 'eng' ? 'active' : ''}`}
-                      onClick={() => setDubPreference('eng')}
+                      type="button"
+                      className={`pref-btn ${animeAudio === 'dub' ? 'active' : ''}`}
+                      onClick={() => {
+                        setAnimeAudio('dub');
+                        setIsVideoLoading(true);
+                      }}
+                      title="English / Multi-language dubbed audio"
                     >
                       DUB
                     </button>
                     <button 
-                      className={`pref-btn ${dubPreference === 'sub' ? 'active' : ''}`}
-                      onClick={() => setDubPreference('sub')}
+                      type="button"
+                      className={`pref-btn ${animeAudio === 'sub' ? 'active' : ''}`}
+                      onClick={() => {
+                        setAnimeAudio('sub');
+                        setIsVideoLoading(true);
+                      }}
+                      title="Japanese audio with English subtitles"
                     >
                       SUB
                     </button>
@@ -1002,7 +1109,9 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                 <div className="episodes-grid-view">
                   {displayedEpisodes.map((ep) => {
                     const isCurrent = selectedEpisode === ep.episode_number;
-                    const durationText = ep.runtime ? `${ep.runtime}:00` : "44:55";
+                    const durationText = ep.runtime ? `${ep.runtime}:00` : "24:00";
+                    const animeEpMatch = isAnime ? hiAnimeEpisodes.find((h) => h.episodeNumber === ep.episode_number) : null;
+                    const epTitle = (ep.name && ep.name !== `Episode ${ep.episode_number}`) ? ep.name : (animeEpMatch?.title || ep.name || `Episode ${ep.episode_number}`);
                     const kickerText = currentMovie.name || currentMovie.title 
                       ? `${(currentMovie.name || currentMovie.title).toUpperCase()} • EP ${ep.episode_number}`
                       : `EPISODE ${ep.episode_number}`;
@@ -1020,12 +1129,12 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                             handleEpisodeSelect(ep.episode_number);
                           }
                         }}
-                        aria-label={`Play Episode ${ep.episode_number}: ${ep.name}`}
+                        aria-label={`Play Episode ${ep.episode_number}: ${epTitle}`}
                       >
                         <div className="episode-grid-thumb-wrap">
                           <img
                             src={ep.still_path ? `https://image.tmdb.org/t/p/w500${ep.still_path}` : `${IMG_BASE_BACKDROP}${currentMovie.backdrop_path}`}
-                            alt={ep.name}
+                            alt={epTitle}
                             className="episode-grid-thumb"
                             loading="lazy"
                             onError={(e) => {
@@ -1033,7 +1142,6 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                             }}
                           />
 
-                          {/* Gradient Scrim for high contrast text */}
                           {/* Netflix Top-10 Giant Outlined Rank Number */}
                           <div className="netflix-episode-rank-num" aria-hidden="true">
                             {ep.episode_number}
@@ -1053,6 +1161,8 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                             <div className="episode-card-meta-left">
                               <span className="episode-card-kicker">
                                 {kickerText}
+                                {animeEpMatch?.isFiller && <span className="anime-filler-badge">FILLER</span>}
+                                {animeEpMatch?.dub && <span className="popover-badge dub" style={{ marginLeft: 6, padding: '2px 6px', fontSize: '0.65rem' }}>DUB</span>}
                               </span>
                               <div className="episode-card-main-row">
                                 <div className="episode-card-play-glyph">
@@ -1060,8 +1170,8 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                                     <path d="M8 5v14l11-7z" />
                                   </svg>
                                 </div>
-                                <h4 className="episode-card-title-text" title={ep.name || `Episode ${ep.episode_number}`}>
-                                  {ep.name || `Episode ${ep.episode_number}`}
+                                <h4 className="episode-card-title-text" title={epTitle}>
+                                  {epTitle}
                                 </h4>
                               </div>
                             </div>
@@ -1078,30 +1188,37 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
               ) : (
                 /* Detailed Accordion List View */
                 <div className="episodes-list">
-                  {displayedEpisodes.map((ep) => (
-                    <div
-                      key={ep.id}
-                      className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`}
-                      onClick={() => {
-                        if (expandedEpisode === ep.episode_number) handleEpisodeSelect(ep.episode_number);
-                        else setExpandedEpisode(ep.episode_number);
-                      }}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
+                  {displayedEpisodes.map((ep) => {
+                    const animeEpMatch = isAnime ? hiAnimeEpisodes.find((h) => h.episodeNumber === ep.episode_number) : null;
+                    const epTitle = (ep.name && ep.name !== `Episode ${ep.episode_number}`) ? ep.name : (animeEpMatch?.title || ep.name || `Episode ${ep.episode_number}`);
+                    return (
+                      <div
+                        key={ep.id}
+                        className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`}
+                        onClick={() => {
                           if (expandedEpisode === ep.episode_number) handleEpisodeSelect(ep.episode_number);
                           else setExpandedEpisode(ep.episode_number);
-                        }
-                      }}
-                      tabIndex={0}
-                      role="button"
-                      aria-label={`${ep.name}, episode ${ep.episode_number}`}
-                    >
-                      <div className="episode-header-row">
-                        <div className="episode-number">{ep.episode_number}</div>
-                        <h3 className="episode-name">{ep.name}</h3>
-                        <span className="episode-runtime">{ep.runtime ? `${ep.runtime}m` : ""}</span>
-                      </div>
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            if (expandedEpisode === ep.episode_number) handleEpisodeSelect(ep.episode_number);
+                            else setExpandedEpisode(ep.episode_number);
+                          }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`${epTitle}, episode ${ep.episode_number}`}
+                      >
+                        <div className="episode-header-row">
+                          <div className="episode-number">{ep.episode_number}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
+                            <h3 className="episode-name" style={{ margin: 0, textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{epTitle}</h3>
+                            {animeEpMatch?.isFiller && <span className="anime-filler-badge">FILLER</span>}
+                            {animeEpMatch?.dub && <span className="popover-badge dub" style={{ marginLeft: 4, padding: "2px 6px", fontSize: "0.65rem" }}>DUB</span>}
+                          </div>
+                          <span className="episode-runtime">{ep.runtime ? `${ep.runtime}m` : "24m"}</span>
+                        </div>
                       <div className="episode-expandable-content">
                         <div className="episode-body">
                           <div className="episode-thumbnail-wrap">
@@ -1118,8 +1235,9 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
               )}
 
               {/* Batch Pagination Footer */}

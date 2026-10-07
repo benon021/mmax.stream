@@ -2982,3 +2982,57 @@
     padding: 1rem 1.15rem;
   }
 }
+
+/* ── Anime Sub / Dub Switch Pill ────────────────────────── */
+.anime-audio-switch-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  padding: 3px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  gap: 3px;
+}
+
+.anime-audio-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.04em;
+}
+
+.anime-audio-btn:hover:not(.active) {
+  color: white;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.anime-audio-btn.active {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 800;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+}
+
+.anime-filler-badge {
+  background: rgba(255, 75, 75, 0.2);
+  color: #ff5555;
+  border: 1px solid rgba(255, 75, 75, 0.4);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: 0.5rem;
+}

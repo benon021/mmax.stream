@@ -40,5 +40,13 @@ function apiDevServerPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), apiDevServerPlugin()],
+  server: {
+    proxy: {
+      '/api/v2': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
   base: '/',
 })
