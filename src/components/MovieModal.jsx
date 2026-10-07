@@ -486,25 +486,6 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     Watch Movie
                   </button>
                 )}
-                <div className="player-floating-bar">
-                  <button 
-                    className="player-pause-back-btn"
-                    onClick={() => {
-                      setIsPlaying(false);
-                      setPlayTrailerFirst(false);
-                    }}
-                    title="Pause and return to details"
-                  >
-                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                    </svg>
-                    <span>Pause / Info</span>
-                  </button>
-
-                  <a href={videoUrl} target="_blank" rel="noreferrer" className="open-video-new-tab">
-                    Open in new window
-                  </a>
-                </div>
               </div>
             </div>
 

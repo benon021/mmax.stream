@@ -199,6 +199,53 @@ export const getTrendingTVWithVideos = async (timeWindow = "day") => {
   return withTrailers.slice(0, 10);
 };
 
+export const getTopRatedTVWithVideos = async () => {
+  const [topRatedRes, popularRes] = await Promise.all([
+    fetch(`${BASE_URL}/tv/top_rated?api_key=${API_KEY}&language=en-US&page=1`).catch(() => null),
+    fetch(`${BASE_URL}/tv/popular?api_key=${API_KEY}&language=en-US&page=1`).catch(() => null),
+  ]);
+
+  const topRatedData = topRatedRes ? await topRatedRes.json() : { results: [] };
+  const popularData = popularRes ? await popularRes.json() : { results: [] };
+
+  const allShows = [...(topRatedData.results || []), ...(popularData.results || [])];
+  const uniqueShows = allShows
+    .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
+    .filter((t) => t.backdrop_path || t.poster_path)
+    .slice(0, 25);
+
+  const detailedTV = await Promise.all(
+    uniqueShows.map(async (tv) => {
+      try {
+        const details = await getMovieDetails(tv.id, "tv");
+        const videos = details.videos?.results || [];
+        const trailer =
+          videos.find((v) => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube") ||
+          videos.find((v) => v.site === "YouTube") ||
+          videos[0];
+        return {
+          ...tv,
+          tmdb_id: tv.id,
+          youtube_key: trailer?.key || null,
+          media_type: "tv",
+        };
+      } catch {
+        return {
+          ...tv,
+          tmdb_id: tv.id,
+          youtube_key: null,
+          media_type: "tv",
+        };
+      }
+    })
+  );
+
+  const withTrailers = shuffleArray(detailedTV.filter((t) => t.youtube_key));
+  const withoutTrailers = shuffleArray(detailedTV.filter((t) => !t.youtube_key));
+
+  return [...withTrailers, ...withoutTrailers].slice(0, 15);
+};
+
 export const getSeasonDetails = async (tvId, seasonNumber) => {
   const res = await fetch(
     `${BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`
@@ -243,64 +290,63 @@ export const getTopRatedAnime = async (page = 1) => {
   return data.results;
 };
 
-export const getTrendingAnimeWithVideos = async (timeWindow = "week") => {
-  const res = await fetch(`${BASE_URL}/trending/tv/${timeWindow}?api_key=${API_KEY}&language=en-US`);
-  const data = await res.json();
+export const getTopRatedAnimeWithVideos = async () => {
+  const [topRatedRes, popularRes] = await Promise.all([
+    fetch(
+      `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=vote_average.desc&vote_count.gte=100&language=en-US&page=1`
+    ).catch(() => null),
+    fetch(
+      `${BASE_URL}/discover/tv?api_key=${API_KEY}&with_genres=${ANIME_GENRE_ID}&with_original_language=${JAPAN_LANG}&sort_by=popularity.desc&language=en-US&page=1`
+    ).catch(() => null),
+  ]);
 
-  const candidates = data.results.filter(item => item.genre_ids?.includes(ANIME_GENRE_ID)).slice(0, 15);
+  const topRatedData = topRatedRes ? await topRatedRes.json() : { results: [] };
+  const popularData = popularRes ? await popularRes.json() : { results: [] };
+
+  const allAnime = [...(topRatedData.results || []), ...(popularData.results || [])];
+  const uniqueAnime = allAnime
+    .filter((v, i, a) => a.findIndex((t) => t.id === v.id) === i)
+    .filter((t) => t.backdrop_path || t.poster_path)
+    .slice(0, 25);
 
   const detailedAnime = await Promise.all(
-    candidates.map(async (anime) => {
-      const details = await getMovieDetails(anime.id, "tv");
-      const videos = details.videos?.results || [];
-      // Prioritize English trailers for anime specifically
-      const trailer = videos.find(v => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube" && (v.name.toLowerCase().includes("english") || v.name.toLowerCase().includes("dub"))) 
-                    || videos.find(v => v.type === "Trailer" && v.site === "YouTube")
-                    || videos[0];
-      return {
-        ...anime,
-        tmdb_id: anime.id,
-        youtube_key: trailer?.key || null,
-        media_type: "tv"
-      };
+    uniqueAnime.map(async (anime) => {
+      try {
+        const details = await getMovieDetails(anime.id, "tv");
+        const videos = details.videos?.results || [];
+        const trailer =
+          videos.find(
+            (v) =>
+              (v.type === "Trailer" || v.type === "Teaser") &&
+              v.site === "YouTube" &&
+              (v.name.toLowerCase().includes("english") || v.name.toLowerCase().includes("dub"))
+          ) ||
+          videos.find((v) => (v.type === "Trailer" || v.type === "Teaser") && v.site === "YouTube") ||
+          videos.find((v) => v.site === "YouTube") ||
+          videos[0];
+
+        return {
+          ...anime,
+          tmdb_id: anime.id,
+          youtube_key: trailer?.key || null,
+          media_type: "tv",
+        };
+      } catch {
+        return {
+          ...anime,
+          tmdb_id: anime.id,
+          youtube_key: null,
+          media_type: "tv",
+        };
+      }
     })
   );
 
   const withTrailers = shuffleArray(detailedAnime.filter((a) => a.youtube_key));
-  return withTrailers.slice(0, 10);
+  const withoutTrailers = shuffleArray(detailedAnime.filter((a) => !a.youtube_key));
+
+  return [...withTrailers, ...withoutTrailers].slice(0, 15);
 };
 
-const normalizeAnimeTitle = (title = "") =>
-  title.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-export const getAnimeHeaderContent = async () => {
-  const [tmdbContent, jikanResponse] = await Promise.all([
-    getTrendingAnimeWithVideos("week"),
-    fetch("https://api.jikan.moe/v4/top/anime?filter=airing&limit=25").then((res) => {
-      if (!res.ok) throw new Error("Jikan request failed");
-      return res.json();
-    }).catch(() => ({ data: [] })),
-  ]);
-
-  const jikanByTitle = new Map();
-  (jikanResponse.data || []).forEach((anime) => {
-    [anime.title, anime.title_english, anime.title_japanese]
-      .filter(Boolean)
-      .forEach((title) => jikanByTitle.set(normalizeAnimeTitle(title), anime));
-  });
-
-  return tmdbContent.map((anime) => {
-    const jikanAnime = [anime.name, anime.original_name]
-      .map(normalizeAnimeTitle)
-      .map((title) => jikanByTitle.get(title))
-      .find(Boolean);
-
-    if (!jikanAnime) return anime;
-
-    return {
-      ...anime,
-      name: jikanAnime.title_english || jikanAnime.title || anime.name,
-      overview: jikanAnime.synopsis || anime.overview,
-    };
-  });
-};
+export const getTrendingAnimeWithVideos = getTopRatedAnimeWithVideos;
+export const getAnimeHeaderContent = getTopRatedAnimeWithVideos;

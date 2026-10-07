@@ -2,7 +2,7 @@ import brandLogo from "../assets/mmax-stream-logo.svg";
 import { useState, useEffect, useRef } from "react";
 import "../css/HeroSection.css";
 import MovieModal from "./MovieModal";
-import { getTrendingTVWithVideos, getMovieDetails } from "../services/api";
+import { getTopRatedTVWithVideos, getMovieDetails } from "../services/api";
 import { useMovieContext } from "../contexts/MovieContext";
 
 const IMG_BASE_ORIGINAL = "https://image.tmdb.org/t/p/original";
@@ -48,22 +48,22 @@ function TVHeroSection() {
     if (isModalOpen) setIsMuted(true);
   }, [isModalOpen]);
 
-  // Fetch TV content
+  // Fetch Top Rated TV content (shuffled at random)
   useEffect(() => {
     let cancelled = false;
-    const loadTrending = async () => {
+    const loadTopRated = async () => {
       try {
-        const trending = await getTrendingTVWithVideos("day");
-        if (!cancelled && trending && trending.length > 0) {
-          setShows(trending);
+        const topRated = await getTopRatedTVWithVideos();
+        if (!cancelled && topRated && topRated.length > 0) {
+          setShows(topRated);
         }
       } catch (error) {
-        console.error("Failed to fetch trending for TV hero:", error);
+        console.error("Failed to fetch top rated for TV hero:", error);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
     };
-    loadTrending();
+    loadTopRated();
     return () => {
       cancelled = true;
     };
@@ -121,6 +121,28 @@ function TVHeroSection() {
       setFade(false);
     }, 1000);
   };
+
+  // Auto-advance rotation (25s timer like movie hero page or when video ends)
+  useEffect(() => {
+    if (shows.length <= 1) return;
+
+    const timer = setTimeout(() => {
+      handleVideoEnd();
+    }, 25000);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, shows.length]);
+
+  // Preload next backdrop images for seamless transition
+  useEffect(() => {
+    if (shows.length < 2) return;
+
+    [1, 2, 3].forEach((offset) => {
+      const show = shows[(currentIndex + offset) % shows.length];
+      const imagePath = show?.backdrop_path || show?.poster_path;
+      if (imagePath) new Image().src = `${IMG_BASE_ORIGINAL}${imagePath}`;
+    });
+  }, [shows, currentIndex]);
 
   // Sync Mute State
   useEffect(() => {

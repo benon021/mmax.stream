@@ -2,7 +2,7 @@ import brandLogo from "../assets/mmax-stream-logo.svg";
 import { useState, useEffect, useRef } from "react";
 import "../css/HeroSection.css";
 import MovieModal from "./MovieModal";
-import { getAnimeHeaderContent, getMovieDetails } from "../services/api";
+import { getTopRatedAnimeWithVideos, getMovieDetails } from "../services/api";
 import { useMovieContext } from "../contexts/MovieContext";
 
 const IMG_BASE_ORIGINAL = "https://image.tmdb.org/t/p/original";
@@ -39,22 +39,22 @@ function AnimeHeroSection() {
     if (isModalOpen) setIsMuted(true);
   }, [isModalOpen]);
 
-  // Fetch dynamic content
+  // Fetch Top Rated Anime content (shuffled at random)
   useEffect(() => {
     let cancelled = false;
-    const loadTrending = async () => {
+    const loadTopRated = async () => {
       try {
-        const trending = await getAnimeHeaderContent();
-        if (!cancelled && trending && trending.length > 0) {
-          setMovies(trending);
+        const topRated = await getTopRatedAnimeWithVideos();
+        if (!cancelled && topRated && topRated.length > 0) {
+          setMovies(topRated);
         }
       } catch (error) {
-        console.error("Failed to fetch trending for anime hero:", error);
+        console.error("Failed to fetch top rated for anime hero:", error);
       } finally {
         if (!cancelled) setIsLoading(false);
       }
     };
-    loadTrending();
+    loadTopRated();
     return () => {
       cancelled = true;
     };
@@ -114,6 +114,28 @@ function AnimeHeroSection() {
       setFade(false);
     }, 1000);
   };
+
+  // Auto-advance rotation (25s timer like movie hero page or when video ends)
+  useEffect(() => {
+    if (movies.length <= 1) return;
+
+    const timer = setTimeout(() => {
+      handleVideoEnd();
+    }, 25000);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, movies.length]);
+
+  // Preload next backdrop images for seamless transition
+  useEffect(() => {
+    if (movies.length < 2) return;
+
+    [1, 2, 3].forEach((offset) => {
+      const movie = movies[(currentIndex + offset) % movies.length];
+      const imagePath = movie?.backdrop_path || movie?.poster_path;
+      if (imagePath) new Image().src = `${IMG_BASE_ORIGINAL}${imagePath}`;
+    });
+  }, [movies, currentIndex]);
 
   // Sync Mute State
   useEffect(() => {
