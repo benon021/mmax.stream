@@ -202,8 +202,110 @@
 }
 
 .movie-player-iframe.is-ready,
-.movie-player-video.is-ready {
+.movie-player-video.is-ready,
+.movie-player-trailer-video.is-ready {
   opacity: 1;
+}
+
+.movie-player-trailer-video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: #000;
+  outline: none;
+  z-index: 2;
+  position: relative;
+}
+
+/* Trailer overlay controls & badge */
+.trailer-badge-pill {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(10, 10, 10, 0.78);
+  border: 1px solid rgba(255, 114, 0, 0.45);
+  color: #ff9133;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+.trailer-badge-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff7200;
+  box-shadow: 0 0 8px #ff7200;
+}
+
+.skip-trailer-overlay-btn {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(12, 12, 14, 0.82);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.65);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skip-trailer-overlay-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.skip-trailer-overlay-btn:hover {
+  background: linear-gradient(135deg, #ff7200, #ff8c33);
+  border-color: #ff7200;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255, 114, 0, 0.45);
+}
+
+.skip-trailer-overlay-btn:hover svg {
+  transform: translateX(2px);
+}
+
+.skip-trailer-overlay-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 640px) {
+  .skip-trailer-overlay-btn {
+    bottom: 14px;
+    right: 14px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+  .trailer-badge-pill {
+    top: 14px;
+    left: 14px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+  }
 }
 
 /* UI Overlay Layer */

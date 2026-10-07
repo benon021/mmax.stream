@@ -66,6 +66,8 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   const [dubPreference, setDubPreference] = useState("eng"); // default to english dub as requested
   const [trailerKey, setTrailerKey] = useState(null);
   const [playTrailerFirst, setPlayTrailerFirst] = useState(false);
+  const [trailerStream, setTrailerStream] = useState(null);
+  const [isTrailerLoading, setIsTrailerLoading] = useState(false);
   const [activeBatchIndex, setActiveBatchIndex] = useState(0);
   const [episodeViewMode, setEpisodeViewMode] = useState("grid"); // "grid" | "list"
   const [episodeSearchQuery, setEpisodeSearchQuery] = useState("");
@@ -80,9 +82,66 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
 
   // Reset trailer states when movie changes
   useEffect(() => {
-    setTrailerKey(null);
+    setTrailerKey(currentMovie.youtube_key || null);
     setPlayTrailerFirst(false);
-  }, [currentMovie.id]);
+    setTrailerStream(null);
+    setIsTrailerLoading(false);
+  }, [currentMovie.id, currentMovie.youtube_key]);
+
+  // Fetch clean direct stream via Vercel serverless function when trailer is triggered
+  useEffect(() => {
+    if (!playTrailerFirst || !trailerKey) {
+      setTrailerStream(null);
+      setIsTrailerLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setIsTrailerLoading(true);
+
+    fetch(`/api/trailer?id=${encodeURIComponent(trailerKey)}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Trailer extraction returned ${res.status}`);
+        return res.json();
+      })
+      .then((data) => {
+        if (!isMounted) return;
+        if (data?.success && data?.type === "direct" && data?.streamUrl) {
+          setTrailerStream({
+            type: "direct",
+            streamUrl: data.streamUrl,
+            title: data.title || "",
+          });
+        } else if (data?.embedUrl) {
+          setTrailerStream({
+            type: "embed",
+            embedUrl: data.embedUrl,
+          });
+        } else {
+          setTrailerStream({
+            type: "embed",
+            embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`,
+          });
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        console.warn("Direct trailer stream resolution fallback to embed:", err);
+        setTrailerStream({
+          type: "embed",
+          embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`,
+        });
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsTrailerLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [playTrailerFirst, trailerKey]);
 
   useEffect(() => {
     setIsPlaying(initialPlaying);
@@ -236,7 +295,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                           videos.find(v => v.site === "YouTube");
           if (trailer?.key) {
             setTrailerKey(trailer.key);
-          } else {
+          } else if (!currentMovie.youtube_key) {
             setTrailerKey(null);
           }
 
@@ -265,7 +324,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
         cancelled = true;
       };
     }
-  }, [isTV, currentMovie.id, mediaType]);
+  }, [isTV, currentMovie.id, mediaType, currentMovie.youtube_key]);
 
   useEffect(() => {
     if (isTV && currentMovie.id) {
@@ -417,10 +476,8 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   }, []);
 
   // Handle Video Source Change
-   const currentSource = SOURCES[currentSourceIndex];
-   const videoUrl = (playTrailerFirst && trailerKey)
-     ? `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1`
-     : currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
+  const currentSource = SOURCES[currentSourceIndex];
+  const videoUrl = currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
 
   return createPortal(
     <div
@@ -476,22 +533,53 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
           <div className="modal-player-section">
             <div className="player-wrapper-outer liquid-crystal">
               <div className="player-video-bg">
-                <iframe
-                  ref={iframeRef}
-                  src={videoUrl}
-                  title={title}
-                  className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
-                  allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-                  allowFullScreen
-                  frameBorder="0"
-                  onLoad={() => setIsVideoLoading(false)}
-                ></iframe>
+                {playTrailerFirst && (
+                  <div className="trailer-badge-pill" aria-label="Official Trailer">
+                    <span className="trailer-badge-dot" />
+                    <span>{isTrailerLoading ? "CONNECTING DIRECT STREAM..." : "TRAILER PREVIEW"}</span>
+                  </div>
+                )}
+
+                {playTrailerFirst && trailerStream?.type === "direct" && trailerStream?.streamUrl ? (
+                  <video
+                    key={trailerStream.streamUrl}
+                    src={trailerStream.streamUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="movie-player-trailer-video is-ready"
+                    onEnded={() => setPlayTrailerFirst(false)}
+                    onLoadedData={() => setIsVideoLoading(false)}
+                    onPlaying={() => setIsVideoLoading(false)}
+                    onWaiting={() => setIsVideoLoading(true)}
+                  />
+                ) : (
+                  <iframe
+                    ref={iframeRef}
+                    src={
+                      playTrailerFirst
+                        ? (trailerStream?.embedUrl || `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`)
+                        : videoUrl
+                    }
+                    title={playTrailerFirst ? `${title} Trailer` : title}
+                    className={`movie-player-iframe ${isVideoLoading ? "is-loading" : "is-ready"}`}
+                    allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+                    allowFullScreen
+                    frameBorder="0"
+                    onLoad={() => setIsVideoLoading(false)}
+                  ></iframe>
+                )}
+
                 {playTrailerFirst && (
                   <button 
                     className="skip-trailer-overlay-btn"
                     onClick={() => setPlayTrailerFirst(false)}
+                    title={`Watch Full ${isAnime ? "Anime" : isTV ? "Show" : "Movie"}`}
                   >
-                    Watch Movie
+                    <span>Watch Full {isAnime ? "Anime" : isTV ? "Show" : "Movie"}</span>
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                      <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                    </svg>
                   </button>
                 )}
               </div>
