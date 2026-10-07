@@ -66,18 +66,18 @@ export default async function handler(req, res) {
       });
     }
 
-    // 3. Fallback: Return clean privacy-enhanced embed parameters
+    // 3. Fallback: Return clean privacy-enhanced embed parameters without controls
     return res.status(200).json({
       success: true,
       type: "embed",
-      embedUrl: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&showinfo=0&controls=1`,
+      embedUrl: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`,
       message: "Direct stream restricted by YouTube; fallback embed ready",
     });
   } catch (error) {
     return res.status(200).json({
       success: false,
       type: "embed",
-      embedUrl: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`,
+      embedUrl: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`,
       error: error.message,
     });
   }

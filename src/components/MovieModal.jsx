@@ -120,7 +120,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
         } else {
           setTrailerStream({
             type: "embed",
-            embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`,
+            embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`,
           });
         }
       })
@@ -129,7 +129,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
         console.warn("Direct trailer stream resolution fallback to embed:", err);
         setTrailerStream({
           type: "embed",
-          embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`,
+          embedUrl: `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`,
         });
       })
       .finally(() => {
@@ -558,7 +558,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     ref={iframeRef}
                     src={
                       playTrailerFirst
-                        ? (trailerStream?.embedUrl || `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&controls=1`)
+                        ? (trailerStream?.embedUrl || `https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&controls=0&modestbranding=1&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&fs=0`)
                         : videoUrl
                     }
                     title={playTrailerFirst ? `${title} Trailer` : title}
