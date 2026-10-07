@@ -113,10 +113,7 @@
 }
 
 /* Metadata for Grid/Mobile */
-.grid-meta-content {
-    display: none;
-    padding: 8px 0;
-}
+.grid-meta-content { display: none !important; }
 
 .grid-movie-title {
     font-size: 0.9rem;

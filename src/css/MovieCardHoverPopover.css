@@ -294,6 +294,20 @@
   transform: translateY(-1px);
 }
 
+.popover-episode-btn.popover-more-btn {
+  background: rgba(255, 114, 0, 0.18);
+  border-color: rgba(255, 114, 0, 0.45);
+  color: #ff8c33;
+  font-size: 0.7rem;
+  padding: 0 6px;
+  min-width: 32px;
+}
+
+.popover-episode-btn.popover-more-btn:hover {
+  background: #ff7200;
+  color: #fff;
+}
+
 /* Action CTA Buttons */
 .hover-popover-actions {
   display: flex;

@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import brandLogo from "../assets/mmax-stream-logo.svg";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import "../css/MovieModal.css";
 import { getSeasonDetails, getMovieDetails, getSimilarContent } from "../services/api";
 import { getProgress, saveProgress } from "../services/progress";
 
 const IMG_BASE_BACKDROP = "https://image.tmdb.org/t/p/original";
+const EPISODES_PER_BATCH = 25;
 
 // Multi-server source list (Optimized for reliability)
 const SOURCES = [
@@ -37,20 +39,22 @@ const SOURCES = [
 
 import { useMovieContext } from "../contexts/MovieContext";
 
-function MovieModal({ movie, onClose }) {
+function MovieModal({ movie, onClose, initialPlaying = false }) {
   const { isFavorite, addToFavorites, removeFromFavorites, setIsModalOpen } = useMovieContext();
   
   // State Declarations
   const [currentMovie, setCurrentMovie] = useState(movie);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(initialPlaying);
   const [isServerHelpOpen, setIsServerHelpOpen] = useState(false);
-  const [isTheaterMode, setIsTheaterMode] = useState(false);
-  const [lightsOff, setLightsOff] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [episodes, setEpisodes] = useState([]);
   const [selectedSeason, setSelectedSeason] = useState(1);
   const [selectedEpisode, setSelectedEpisode] = useState(1);
   const [loadingEpisodes, setLoadingEpisodes] = useState(false);
   const [fullDetails, setFullDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(true);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const [isSeasonOpen, setIsSeasonOpen] = useState(false);
   const [similarContent, setSimilarContent] = useState([]);
   const [loadingSimilar, setLoadingSimilar] = useState(false);
@@ -62,6 +66,9 @@ function MovieModal({ movie, onClose }) {
   const [dubPreference, setDubPreference] = useState("eng"); // default to english dub as requested
   const [trailerKey, setTrailerKey] = useState(null);
   const [playTrailerFirst, setPlayTrailerFirst] = useState(false);
+  const [activeBatchIndex, setActiveBatchIndex] = useState(0);
+  const [episodeViewMode, setEpisodeViewMode] = useState("grid"); // "grid" | "list"
+  const [episodeSearchQuery, setEpisodeSearchQuery] = useState("");
   
   const modalOverlayRef = useRef(null);
   const iframeRef = useRef(null);
@@ -76,6 +83,10 @@ function MovieModal({ movie, onClose }) {
     setTrailerKey(null);
     setPlayTrailerFirst(false);
   }, [currentMovie.id]);
+
+  useEffect(() => {
+    setIsPlaying(initialPlaying);
+  }, [initialPlaying, currentMovie.id]);
 
   useEffect(() => {
     setIsModalOpen(true);
@@ -138,6 +149,13 @@ function MovieModal({ movie, onClose }) {
   }, [isPlaying, currentMovie, selectedSeason, selectedEpisode, episodes, title, mediaType, isTV]);
 
   // Extract dynamic maturity rating
+    const movieLogo = useMemo(() => {
+    if (!fullDetails?.images?.logos || fullDetails.images.logos.length === 0) return null;
+    const enLogo = fullDetails.images.logos.find(l => l.iso_639_1 === "en");
+    const chosen = enLogo || fullDetails.images.logos[0];
+    return chosen?.file_path ? `https://image.tmdb.org/t/p/original${chosen.file_path}` : null;
+  }, [fullDetails]);
+
   const getRating = () => {
     if (!fullDetails) return "NR";
     if (isTV) {
@@ -186,6 +204,9 @@ function MovieModal({ movie, onClose }) {
   useEffect(() => {
     if (currentMovie.id) {
       setFullDetails(null);
+      setDetailsLoading(true);
+      setLogoLoaded(false);
+      setLogoError(false);
       setSimilarContent([]);
       setLoadingSimilar(true);
       const saved = getProgress(currentMovie.id);
@@ -204,6 +225,7 @@ function MovieModal({ movie, onClose }) {
         .then(data => {
           if (cancelled) return;
           setFullDetails(data);
+          setDetailsLoading(false);
 
           // Extract YouTube Trailer Key
           const videos = data.videos?.results || [];
@@ -229,7 +251,10 @@ function MovieModal({ movie, onClose }) {
               if (!cancelled) setSimilarContent((data || []).slice(0, 12));
             })
             .finally(() => {
-              if (!cancelled) setLoadingSimilar(false);
+              if (!cancelled) {
+              setLoadingSimilar(false);
+              setDetailsLoading(false);
+            }
             });
         });
 
@@ -254,10 +279,78 @@ function MovieModal({ movie, onClose }) {
     }
   }, [isTV, currentMovie.id, selectedSeason]);
 
-  // Fullscreen Orientation Lock for Mobile
+  // Calculate batches for pagination / tabs (e.g., 1–25, 26–50, etc.)
+  const episodeBatches = useMemo(() => {
+    if (!episodes || episodes.length === 0) return [];
+    const totalBatches = Math.ceil(episodes.length / EPISODES_PER_BATCH);
+    const list = [];
+    for (let i = 0; i < totalBatches; i++) {
+      const start = i * EPISODES_PER_BATCH;
+      const end = Math.min((i + 1) * EPISODES_PER_BATCH, episodes.length);
+      const batchSlice = episodes.slice(start, end);
+      const startNum = batchSlice[0]?.episode_number ?? (start + 1);
+      const endNum = batchSlice[batchSlice.length - 1]?.episode_number ?? end;
+      list.push({
+        index: i,
+        label: `${startNum}–${endNum}`,
+        startNum,
+        endNum,
+        containsSelected: batchSlice.some((e) => e.episode_number === selectedEpisode)
+      });
+    }
+    return list;
+  }, [episodes, selectedEpisode]);
+
+  // Auto-jump to the batch containing the selected/watched episode
+  useEffect(() => {
+    if (!episodes || episodes.length === 0) return;
+    const currentIdx = episodes.findIndex((e) => e.episode_number === selectedEpisode);
+    if (currentIdx !== -1) {
+      const targetBatch = Math.floor(currentIdx / EPISODES_PER_BATCH);
+      setActiveBatchIndex(targetBatch);
+    }
+  }, [episodes, selectedEpisode]);
+
+  // Filter episodes if search query is entered
+  const filteredEpisodes = useMemo(() => {
+    if (!episodeSearchQuery.trim()) return episodes;
+    const q = episodeSearchQuery.trim().toLowerCase();
+    const queryNum = parseInt(q, 10);
+    return episodes.filter((ep) => {
+      const matchesNum = !isNaN(queryNum) && ep.episode_number === queryNum;
+      const matchesName = ep.name?.toLowerCase().includes(q);
+      const matchesOverview = ep.overview?.toLowerCase().includes(q);
+      return matchesNum || matchesName || matchesOverview;
+    });
+  }, [episodes, episodeSearchQuery]);
+
+  // Slice displayed episodes according to active batch (or search)
+  const displayedEpisodes = useMemo(() => {
+    if (episodeSearchQuery.trim()) {
+      return filteredEpisodes;
+    }
+    if (episodes.length <= EPISODES_PER_BATCH) {
+      return episodes;
+    }
+    const maxBatch = Math.max(0, episodeBatches.length - 1);
+    const safeBatchIndex = Math.min(activeBatchIndex, maxBatch);
+    const start = safeBatchIndex * EPISODES_PER_BATCH;
+    const end = start + EPISODES_PER_BATCH;
+    return episodes.slice(start, end);
+  }, [episodes, activeBatchIndex, episodeSearchQuery, filteredEpisodes, episodeBatches]);
+
+  // Fullscreen state tracking & Orientation Lock for Mobile
   useEffect(() => {
     const handleFullscreenChange = () => {
-      if (document.fullscreenElement) {
+      const isCurrentlyFullscreen = Boolean(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.mozFullScreenElement ||
+        document.msFullscreenElement
+      );
+      setIsFullscreen(isCurrentlyFullscreen);
+
+      if (isCurrentlyFullscreen) {
         // Only attempt to lock orientation if it's supported and we're on a mobile-like screen
         if (screen.orientation && screen.orientation.lock && window.innerWidth <= 1024) {
           screen.orientation.lock("landscape").catch(err => {
@@ -273,13 +366,52 @@ function MovieModal({ movie, onClose }) {
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
     return () => {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
     };
   }, []);
 
+  // Cleanup fullscreen on unmount
+  useEffect(() => {
+    return () => {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen().catch(() => {});
+        }
+      }
+    };
+  }, []);
 
+  const handleClose = () => {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen().catch(() => {});
+      }
+    }
+    onClose();
+  };
+
+  // Close with Escape key when not in browser fullscreen
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          handleClose();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Handle Video Source Change
    const currentSource = SOURCES[currentSourceIndex];
@@ -287,15 +419,14 @@ function MovieModal({ movie, onClose }) {
      ? `https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1`
      : currentSource.getUrl(currentMovie.id, isTV, selectedSeason, selectedEpisode);
 
-
   return createPortal(
     <div
-      className={`modal-overlay ${lightsOff ? "lights-off-active" : ""}`}
+      className={`modal-overlay  ${isFullscreen ? "is-fullscreen" : ""}`}
       onClick={(event) => event.stopPropagation()}
       ref={modalOverlayRef}
     >
       <div
-        className={`modal-content ${isTheaterMode ? "theater-mode" : ""} ${isPlaying ? "playing" : ""}`}
+        className={`modal-content ${isFullscreen ? "fullscreen" : ""} ${isPlaying ? "playing" : ""}`}
         onClick={(e) => e.stopPropagation()}
         onFocusCapture={(event) => {
           if (event.target.matches("button, a, [tabindex='0']")) {
@@ -303,7 +434,7 @@ function MovieModal({ movie, onClose }) {
           }
         }}
       >
-        <button className="modal-close" onClick={onClose}>✕</button>
+        <button className="modal-close" onClick={handleClose} aria-label="Close modal" title="Close">✕</button>
 
         {isServerHelpOpen && (
           <div className="server-help-popup" role="dialog" aria-label="Change streaming server">
@@ -332,11 +463,10 @@ function MovieModal({ movie, onClose }) {
           </div>
         )}
 
-        <div className="modal-top-section">
-          {isPlaying ? (
-            <div
-              className="player-wrapper-outer liquid-crystal"
-            >
+        {/* Netflix Pause Hero (when not playing) OR Active Player Section (when playing) */}
+        {isPlaying ? (
+          <div className="modal-player-section">
+            <div className="player-wrapper-outer liquid-crystal">
               <div className="player-video-bg">
                 <iframe
                   ref={iframeRef}
@@ -356,204 +486,412 @@ function MovieModal({ movie, onClose }) {
                     Watch Movie
                   </button>
                 )}
-                {/* Fallback link to open video in a new tab if iframe fails */}
-                <a href={videoUrl} target="_blank" rel="noreferrer" className="open-video-new-tab">
-                  Open video in new window
-                </a>
-              </div>
+                <div className="player-floating-bar">
+                  <button 
+                    className="player-pause-back-btn"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setPlayTrailerFirst(false);
+                    }}
+                    title="Pause and return to details"
+                  >
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                      <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                    <span>Pause / Info</span>
+                  </button>
 
-            </div>
-          ) : (
-            <div className="modal-backdrop-wrap">
-              <div className="modal-backdrop-placeholder" aria-label={title}>
-                <span>{title}</span>
+                  <a href={videoUrl} target="_blank" rel="noreferrer" className="open-video-new-tab">
+                    Open in new window
+                  </a>
+                </div>
               </div>
-              {trailerKey ? (
-                <iframe
-                  className="modal-backdrop-iframe"
-                  src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${trailerKey}&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3`}
-                  title={`${title} Background Trailer`}
-                  allow="autoplay; encrypted-media"
-                  frameBorder="0"
-                ></iframe>
-              ) : backdropPath && (
+            </div>
+
+            <div className="player-now-watching-bar">
+              <div className="player-now-watching-info">
+                <h2 className="player-now-watching-title">{title}</h2>
+                <div className="modal-meta">
+                  <span className="modal-rating-pill">{votePercent}% Match</span>
+                  <span className="modal-year">{year}</span>
+                  <span className="modal-maturity-dynamic">{getRating()}</span>
+                  <span className="modal-quality">4K Ultra HD</span>
+                  {isTV && <span className="modal-duration">S{selectedSeason}:E{selectedEpisode}</span>}
+                </div>
+              </div>
+              <div className="player-now-watching-actions">
+                <button 
+                  className="modal-btn secondary pause-details-toggle"
+                  onClick={() => {
+                    setIsPlaying(false);
+                    setPlayTrailerFirst(false);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                  </svg>
+                  <span>Pause / Info</span>
+                </button>
+                <button 
+                  className={`modal-btn secondary fav-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
+                  onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}
+                >
+                  <span>{isFavorite(currentMovie.id) ? "✓ FAVORITES" : "+ FAVORITES"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="netflix-pause-hero">
+            <div className="netflix-hero-bg">
+              {backdropPath ? (
                 <img
                   src={`${IMG_BASE_BACKDROP}${backdropPath}`}
                   alt={title}
-                  className="modal-backdrop"
+                  className="netflix-hero-backdrop-img"
                   onError={(event) => { event.currentTarget.style.display = "none"; }}
                 />
-              )}
-              <div className="modal-fade" />
-              <button className="big-play-btn liquid-btn-primary" onClick={handlePlayStart}>
-                <svg viewBox="0 0 24 24" fill="currentColor" width="50" height="50">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="modal-details-center">
-          <div className="modal-header-flex">
-            <h1 className="modal-title">{title}</h1>
-            <div className="player-controls">
-              <button className={`control-btn ${lightsOff ? "active" : ""}`} onClick={() => setLightsOff(!lightsOff)}>
-                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z" />
-                </svg>
-              </button>
-              <button className={`control-btn ${isTheaterMode ? "active" : ""}`} onClick={() => setIsTheaterMode(!isTheaterMode)}>
-                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" /><path d="M7 10h10v4H7z" />
-                </svg>
-              </button>
-              <button className="control-btn" onClick={onClose} aria-label="Close movie">
-                ✕
-              </button>
-            </div>
-          </div>
-
-          <div className="modal-meta">
-            <span className="modal-year">{year}</span>
-            <span className="modal-rating-pill">{votePercent}% Match</span>
-            <span className="modal-maturity-dynamic">{getRating()}</span>
-            <span className="modal-quality">4K</span>
-          </div>
-
-          <div className="modal-actions">
-            <button className="modal-btn play liquid-btn-primary" onClick={handlePlayStart}>
-              <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M6 4l15 8-15 8V4z" /></svg>
-              WATCH NOW
-            </button>
-            
-            {isAnime && (
-              <div className="anime-preference-toggle glass-btn">
-                <button 
-                  className={`pref-btn ${dubPreference === 'eng' ? 'active' : ''}`}
-                  onClick={() => setDubPreference('eng')}
-                >
-                  DUB
-                </button>
-                <button 
-                  className={`pref-btn ${dubPreference === 'sub' ? 'active' : ''}`}
-                  onClick={() => setDubPreference('sub')}
-                >
-                  SUB
-                </button>
-              </div>
-            )}
-
-            {trailerKey && (
-              <button 
-                className="modal-btn secondary trailer-btn"
-                onClick={() => {
-                  setPlayTrailerFirst(true);
-                  setIsPlaying(true);
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style={{ marginRight: '6px' }}>
-                  <path d="M21 6h-7.59l3.29-3.29L16 2l-4 4-4-4-.71.71L10.59 6H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 14H3V8h18v12zM9 10v8l7-4z"/>
-                </svg>
-                TRAILER
-              </button>
-            )}
-
-            <button 
-              className={`modal-btn secondary ${isFavorite(currentMovie.id) ? "active" : ""}`}
-              onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}
-            >
-              {isFavorite(currentMovie.id) ? "✓ FAVORITES" : "＋ FAVORITES"}
-            </button>
-            <div className="modal-server-picker">
-              <button
-                type="button"
-                className="modal-server-trigger"
-                onClick={() => setIsServerOpen(!isServerOpen)}
-                aria-expanded={isServerOpen}
-                aria-haspopup="listbox"
-              >
-                <span className="server-trigger-label">SERVER</span>
-                <span>{currentSource.name}</span>
-                <span aria-hidden="true">▾</span>
-              </button>
-              {isServerOpen && (
-                <div className="modal-server-menu" role="listbox" aria-label="Choose streaming server">
-                  {SOURCES.map((source, index) => (
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={currentSourceIndex === index}
-                      key={source.id}
-                      className={`modal-server-option ${currentSourceIndex === index ? "active" : ""}`}
-                      onClick={() => {
-                        setCurrentSourceIndex(index);
-                        setIsServerOpen(false);
-                      }}
-                    >
-                      {source.name}
-                    </button>
-                  ))}
+              ) : (
+                <div className="netflix-hero-backdrop-placeholder" aria-label={title}>
+                  <span>{title}</span>
                 </div>
               )}
+              <div className="netflix-hero-top-fade" />
+              <div className="netflix-hero-gradient-overlay" />
+              <div className="netflix-hero-bottom-fade" />
             </div>
-            <div className="social-links-premium">
-              {fullDetails?.external_ids?.instagram_id && (
-                <a href={`https://instagram.com/${fullDetails.external_ids.instagram_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="Instagram">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                  </svg>
-                </a>
-              )}
-              {fullDetails?.external_ids?.twitter_id && (
-                <a href={`https://twitter.com/${fullDetails.external_ids.twitter_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="Twitter/X">
-                  <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                  </svg>
-                </a>
-              )}
-              {fullDetails?.external_ids?.imdb_id && (
-                <a href={`https://www.imdb.com/title/${fullDetails.external_ids.imdb_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="IMDb">
-                  <span style={{ fontWeight: 900, fontSize: '0.8rem' }}>IMDb</span>
-                </a>
-              )}
+
+            <div className="netflix-hero-content">
+              {/* Netflix Red Brand Kicker */}
+              <div className="hero-kicker-mmax">
+                <img src={brandLogo} alt="MMAX" className="hero-kicker-mmax-logo" />
+              </div>
+
+              <div className="netflix-hero-title-area">
+                {detailsLoading ? (
+                  <div className="modal-title-placeholder" aria-hidden="true" />
+                ) : (movieLogo && !logoError) ? (
+                  <div className="modal-title-logo-wrap">
+                    <img 
+                      src={movieLogo} 
+                      alt={title} 
+                      className={`modal-title-logo ${logoLoaded ? "loaded" : "loading"}`} 
+                      onLoad={() => setLogoLoaded(true)}
+                      onError={() => setLogoError(true)}
+                    />
+                  </div>
+                ) : (
+                  <h1 className="modal-title">{title}</h1>
+                )}
+              </div>
+
+              <div className="modal-meta">
+                <span className="modal-rating-pill">{votePercent}% Match</span>
+                <span className="modal-year">{year}</span>
+                <span className="modal-maturity-dynamic">{getRating()}</span>
+                <span className="modal-quality">4K Ultra HD</span>
+                {(fullDetails?.runtime || fullDetails?.number_of_seasons) && (
+                  <span className="modal-duration">
+                    {isTV 
+                      ? `${fullDetails.number_of_seasons} Season${fullDetails.number_of_seasons > 1 ? 's' : ''}`
+                      : `${Math.floor(fullDetails.runtime / 60)}h ${fullDetails.runtime % 60}m`
+                    }
+                  </span>
+                )}
+              </div>
+
+              {/* Row 1: Action Buttons on one line */}
+              <div className="modal-actions">
+                <button className="modal-btn play liquid-btn-primary" onClick={handlePlayStart}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M6 4l15 8-15 8V4z" /></svg>
+                  <span>WATCH NOW</span>
+                </button>
+                
+                {isAnime && (
+                  <div className="anime-preference-toggle glass-btn">
+                    <button 
+                      className={`pref-btn ${dubPreference === 'eng' ? 'active' : ''}`}
+                      onClick={() => setDubPreference('eng')}
+                    >
+                      DUB
+                    </button>
+                    <button 
+                      className={`pref-btn ${dubPreference === 'sub' ? 'active' : ''}`}
+                      onClick={() => setDubPreference('sub')}
+                    >
+                      SUB
+                    </button>
+                  </div>
+                )}
+
+                <div className="modal-secondary-actions">
+                  {trailerKey && (
+                    <button 
+                      className="modal-btn secondary trailer-btn"
+                      onClick={() => {
+                        setPlayTrailerFirst(true);
+                        setIsPlaying(true);
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                        <path d="M21 6h-7.59l3.29-3.29L16 2l-4 4-4-4-.71.71L10.59 6H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 14H3V8h18v12zM9 10v8l7-4z"/>
+                      </svg>
+                      <span>TRAILER</span>
+                    </button>
+                  )}
+
+                  <button 
+                    className={`modal-btn secondary fav-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
+                    onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}
+                  >
+                    <span>{isFavorite(currentMovie.id) ? "✓ FAVORITES" : "+ FAVORITES"}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Row 2: Server Picker & Social Links */}
+              <div className="modal-sub-actions">
+                <div className="modal-server-picker">
+                  <button
+                    type="button"
+                    className="modal-server-trigger"
+                    onClick={() => setIsServerOpen(!isServerOpen)}
+                    aria-expanded={isServerOpen}
+                    aria-haspopup="listbox"
+                  >
+                    <span className="server-trigger-label">SERVER</span>
+                    <span className="server-name-display">{currentSource.name}</span>
+                    <span aria-hidden="true">▾</span>
+                  </button>
+                  {isServerOpen && (
+                    <div className="modal-server-menu" role="listbox" aria-label="Choose streaming server">
+                      {SOURCES.map((source, index) => (
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={currentSourceIndex === index}
+                          key={source.id}
+                          className={`modal-server-option ${currentSourceIndex === index ? "active" : ""}`}
+                          onClick={() => {
+                            setCurrentSourceIndex(index);
+                            setIsServerOpen(false);
+                          }}
+                        >
+                          {source.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="social-links-premium">
+                  {fullDetails?.external_ids?.instagram_id && (
+                    <a href={`https://instagram.com/${fullDetails.external_ids.instagram_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="Instagram">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                      </svg>
+                    </a>
+                  )}
+                  {fullDetails?.external_ids?.twitter_id && (
+                    <a href={`https://twitter.com/${fullDetails.external_ids.twitter_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="Twitter/X">
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                      </svg>
+                    </a>
+                  )}
+                  {fullDetails?.external_ids?.imdb_id && (
+                    <a href={`https://www.imdb.com/title/${fullDetails.external_ids.imdb_id}`} target="_blank" rel="noreferrer" className="social-btn-liquid" title="IMDb">
+                      <span style={{ fontWeight: 900, fontSize: '0.8rem' }}>IMDb</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Synopsis */}
+              <p className="modal-overview">{currentMovie.overview}</p>
+
+              {/* Cast & Crew Details */}
+              <div className="modal-extra">
+                <p><span>Starring:</span> {fullDetails?.credits?.cast?.slice(0, 5).map(c => c.name).join(", ") || "Loading..."}</p>
+                {director && <p><span>Director:</span> {director}</p>}
+                {creator && <p><span>Creator:</span> {creator}</p>}
+                <p><span>Genres:</span> {fullDetails?.genres?.map(g => g.name).join(", ") || "Loading..."}</p>
+                <p><span>Language:</span> {fullDetails?.spoken_languages?.map(l => l.english_name).join(", ") || currentMovie.original_language?.toUpperCase()}</p>
+              </div>
             </div>
           </div>
+        )}
 
-          <p className="modal-overview">{currentMovie.overview}</p>
+        <div className="modal-details-center">
+          {isPlaying && (
+            <div className="player-details-summary">
+              <p className="modal-overview">{currentMovie.overview}</p>
+              <div className="modal-extra">
+                <p><span>Starring:</span> {fullDetails?.credits?.cast?.slice(0, 5).map(c => c.name).join(", ") || "Loading..."}</p>
+                {director && <p><span>Director:</span> {director}</p>}
+                {creator && <p><span>Creator:</span> {creator}</p>}
+                <p><span>Genres:</span> {fullDetails?.genres?.map(g => g.name).join(", ") || "Loading..."}</p>
+              </div>
+            </div>
+          )}
 
-          <div className="modal-extra">
-            <p><span>Starring:</span> {fullDetails?.credits?.cast?.slice(0, 5).map(c => c.name).join(", ") || "Loading..."}</p>
-            {director && <p><span>Director:</span> {director}</p>}
-            {creator && <p><span>Creator:</span> {creator}</p>}
-            <p><span>Genres:</span> {fullDetails?.genres?.map(g => g.name).join(", ") || "Loading..."}</p>
-            <p><span>Language:</span> {fullDetails?.spoken_languages?.map(l => l.english_name).join(", ") || currentMovie.original_language?.toUpperCase()}</p>
-          </div>
+          {/* Netflix-Style Production Companies Grid */}
+          {fullDetails?.production_companies && fullDetails.production_companies.length > 0 && (
+            <div className="production-studios-section">
+              <span className="production-studios-title">PRODUCED BY</span>
+              <div className="production-studios-grid">
+                {fullDetails.production_companies.map((company) => (
+                  <div key={company.id} className="studio-card" title={company.name}>
+                    {company.logo_path ? (
+                      <img
+                        src={`https://image.tmdb.org/t/p/w200${company.logo_path}`}
+                        alt={company.name}
+                        className="studio-logo-img"
+                      />
+                    ) : (
+                      <span className="studio-name-text">{company.name}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {isTV && (
             <div className="episodes-section">
               <div className="episodes-header">
-                <h2 className="episodes-title">Episodes</h2>
-                {(fullDetails?.number_of_seasons || 1) > 1 && (
-                  <div className="season-custom-dropdown" onClick={(e) => e.stopPropagation()}>
-                    <button className={`season-trigger ${isSeasonOpen ? "open" : ""}`} onClick={() => setIsSeasonOpen(!isSeasonOpen)}>
-                      <span>Season {selectedSeason}</span>
-                      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M7 10l5 5 5-5z" /></svg>
-                    </button>
-                    {isSeasonOpen && fullDetails && (
-                      <div className="season-menu liquid-menu">
-                        {[...Array(fullDetails.number_of_seasons)].map((_, i) => (
-                          <div key={i + 1} className={`season-option ${selectedSeason === i + 1 ? "active" : ""}`} onClick={() => { setSelectedSeason(i + 1); setIsSeasonOpen(false); setSelectedEpisode(1); }}>
-                            Season {i + 1}
-                          </div>
-                        ))}
-                      </div>
+                <div className="episodes-header-left">
+                  <h2 className="episodes-title">
+                    Episodes
+                    {episodes.length > 0 && (
+                      <span className="episodes-count-badge">{episodes.length}</span>
                     )}
+                  </h2>
+                  {(fullDetails?.number_of_seasons || 1) > 1 && (
+                    <div className="season-custom-dropdown" onClick={(e) => e.stopPropagation()}>
+                      <button className={`season-trigger ${isSeasonOpen ? "open" : ""}`} onClick={() => setIsSeasonOpen(!isSeasonOpen)}>
+                        <span>Season {selectedSeason}</span>
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M7 10l5 5 5-5z" /></svg>
+                      </button>
+                      {isSeasonOpen && fullDetails && (
+                        <div className="season-menu liquid-menu">
+                          {[...Array(fullDetails.number_of_seasons)].map((_, i) => (
+                            <div key={i + 1} className={`season-option ${selectedSeason === i + 1 ? "active" : ""}`} onClick={() => { setSelectedSeason(i + 1); setIsSeasonOpen(false); setSelectedEpisode(1); }}>
+                              Season {i + 1}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {episodes.length > 0 && (
+                  <div className="episodes-header-right">
+                    <div className="episodes-search-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15" className="search-icon">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search or Ep #..."
+                        value={episodeSearchQuery}
+                        onChange={(e) => setEpisodeSearchQuery(e.target.value)}
+                        className="episodes-search-input"
+                        aria-label="Search episodes"
+                      />
+                      {episodeSearchQuery && (
+                        <button
+                          type="button"
+                          className="episodes-search-clear"
+                          onClick={() => setEpisodeSearchQuery("")}
+                          title="Clear search"
+                          aria-label="Clear search"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="episodes-view-toggle">
+                      <button
+                        type="button"
+                        className={`view-toggle-btn ${episodeViewMode === "grid" ? "active" : ""}`}
+                        onClick={() => setEpisodeViewMode("grid")}
+                        title="Grid View (Compact Tiles)"
+                        aria-label="Grid View"
+                      >
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className={`view-toggle-btn ${episodeViewMode === "list" ? "active" : ""}`}
+                        onClick={() => setEpisodeViewMode("list")}
+                        title="List View (Detailed Accordion)"
+                        aria-label="List View"
+                      >
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                          <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {/* Batch Tabs (when total episodes > 25 and not actively searching) */}
+              {episodeBatches.length > 1 && !episodeSearchQuery && (
+                <div className="episodes-batch-nav">
+                  <div className="batch-tabs-scroll-wrap">
+                    {episodeBatches.map((batch) => (
+                      <button
+                        key={batch.index}
+                        type="button"
+                        className={`batch-tab-btn ${activeBatchIndex === batch.index ? "active" : ""} ${batch.containsSelected ? "has-current" : ""}`}
+                        onClick={() => setActiveBatchIndex(batch.index)}
+                      >
+                        {batch.containsSelected && <span className="batch-now-playing-dot" title="Current Episode" />}
+                        <span>{batch.label}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {!episodeBatches[activeBatchIndex]?.containsSelected && episodes.some((e) => e.episode_number === selectedEpisode) && (
+                    <button
+                      type="button"
+                      className="batch-jump-current-btn"
+                      onClick={() => {
+                        const currentIdx = episodes.findIndex((e) => e.episode_number === selectedEpisode);
+                        if (currentIdx !== -1) {
+                          setActiveBatchIndex(Math.floor(currentIdx / EPISODES_PER_BATCH));
+                        }
+                      }}
+                      title="Jump to current playing episode batch"
+                    >
+                      <span className="batch-now-playing-dot" />
+                      Jump to Ep {selectedEpisode}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Search active results feedback */}
+              {episodeSearchQuery && (
+                <div className="episodes-search-feedback">
+                  <span>Found {displayedEpisodes.length} {displayedEpisodes.length === 1 ? "episode" : "episodes"} for &ldquo;{episodeSearchQuery}&rdquo;</span>
+                  <button type="button" onClick={() => setEpisodeSearchQuery("")} className="clear-search-pill">
+                    Clear filter
+                  </button>
+                </div>
+              )}
 
               {loadingEpisodes ? (
                 <div className="episodes-loading">Loading episodes...</div>
@@ -561,9 +899,95 @@ function MovieModal({ movie, onClose }) {
                 <div className="episodes-loading">
                   {isAnime ? "Anime episodes are currently unavailable." : "Episodes are currently unavailable."}
                 </div>
+              ) : displayedEpisodes.length === 0 ? (
+                <div className="episodes-no-results">
+                  <p>No episodes match your search &ldquo;{episodeSearchQuery}&rdquo;</p>
+                  <button type="button" className="episodes-clear-search-btn" onClick={() => setEpisodeSearchQuery("")}>
+                    Reset Search
+                  </button>
+                </div>
+              ) : episodeViewMode === "grid" ? (
+                /* Compact Grid / Tile View (Matching Video Card Reference) */
+                <div className="episodes-grid-view">
+                  {displayedEpisodes.map((ep) => {
+                    const isCurrent = selectedEpisode === ep.episode_number;
+                    const durationText = ep.runtime ? `${ep.runtime}:00` : "44:55";
+                    const kickerText = currentMovie.name || currentMovie.title 
+                      ? `${(currentMovie.name || currentMovie.title).toUpperCase()} • EP ${ep.episode_number}`
+                      : `EPISODE ${ep.episode_number}`;
+
+                    return (
+                      <div
+                        key={ep.id || ep.episode_number}
+                        className={`episode-grid-card ${isCurrent ? "playing" : ""}`}
+                        onClick={() => handleEpisodeSelect(ep.episode_number)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleEpisodeSelect(ep.episode_number);
+                          }
+                        }}
+                        aria-label={`Play Episode ${ep.episode_number}: ${ep.name}`}
+                      >
+                        <div className="episode-grid-thumb-wrap">
+                          <img
+                            src={ep.still_path ? `https://image.tmdb.org/t/p/w500${ep.still_path}` : `${IMG_BASE_BACKDROP}${currentMovie.backdrop_path}`}
+                            alt={ep.name}
+                            className="episode-grid-thumb"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.src = `${IMG_BASE_BACKDROP}${currentMovie.backdrop_path}`;
+                            }}
+                          />
+
+                          {/* Gradient Scrim for high contrast text */}
+                          {/* Netflix Top-10 Giant Outlined Rank Number */}
+                          <div className="netflix-episode-rank-num" aria-hidden="true">
+                            {ep.episode_number}
+                          </div>
+
+                          <div className="episode-card-scrim" />
+
+                          {isCurrent && (
+                            <div className="episode-grid-now-playing-tag">
+                              <span className="playing-pulse-indicator" />
+                              NOW PLAYING
+                            </div>
+                          )}
+
+                          {/* Card Overlay: Red Kicker, White Play Icon + Bold Title, and Timestamp Badge */}
+                          <div className="episode-card-overlay">
+                            <div className="episode-card-meta-left">
+                              <span className="episode-card-kicker">
+                                {kickerText}
+                              </span>
+                              <div className="episode-card-main-row">
+                                <div className="episode-card-play-glyph">
+                                  <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                                <h4 className="episode-card-title-text" title={ep.name || `Episode ${ep.episode_number}`}>
+                                  {ep.name || `Episode ${ep.episode_number}`}
+                                </h4>
+                              </div>
+                            </div>
+
+                            <div className="episode-card-time-badge">
+                              {durationText}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               ) : (
+                /* Detailed Accordion List View */
                 <div className="episodes-list">
-                  {episodes.map((ep) => (
+                  {displayedEpisodes.map((ep) => (
                     <div
                       key={ep.id}
                       className={`episode-card-accordion ${expandedEpisode === ep.episode_number ? "expanded" : ""} ${selectedEpisode === ep.episode_number ? "playing" : ""}`}
@@ -606,37 +1030,64 @@ function MovieModal({ movie, onClose }) {
                   ))}
                 </div>
               )}
+
+              {/* Batch Pagination Footer */}
+              {episodeBatches.length > 1 && !episodeSearchQuery && (
+                <div className="episodes-batch-footer">
+                  <button
+                    type="button"
+                    className="batch-nav-step-btn prev"
+                    disabled={activeBatchIndex === 0}
+                    onClick={() => setActiveBatchIndex((prev) => Math.max(0, prev - 1))}
+                  >
+                    ← Previous Batch
+                  </button>
+                  <span className="batch-page-indicator">
+                    Batch {activeBatchIndex + 1} of {episodeBatches.length} &bull; Episodes {episodeBatches[activeBatchIndex]?.label}
+                  </span>
+                  <button
+                    type="button"
+                    className="batch-nav-step-btn next"
+                    disabled={activeBatchIndex >= episodeBatches.length - 1}
+                    onClick={() => setActiveBatchIndex((prev) => Math.min(episodeBatches.length - 1, prev + 1))}
+                  >
+                    Next Batch →
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          <div className="production-grid-premium">
-            {fullDetails?.production_companies?.filter(c => c.logo_path).slice(0, 4).map(company => (
-              <div key={company.id} className="production-logo-wrap" title={company.name}>
-                <img src={`https://image.tmdb.org/t/p/w200${company.logo_path}`} alt={company.name} />
-              </div>
-            ))}
-          </div>
-
-          <div className="modal-tech-specs liquid-glass">
+                    <div className="modal-tech-specs liquid-glass">
             <div className="tech-item">
               <span className="tech-label">Status</span>
-              <span className="tech-value">{fullDetails?.status || "N/A"}</span>
+              <span className="tech-value">{fullDetails?.status || "Released"}</span>
             </div>
             {!isTV && (
               <>
                 <div className="tech-item">
                   <span className="tech-label">Budget</span>
-                  <span className="tech-value">${fullDetails?.budget?.toLocaleString() || "N/A"}</span>
+                  <span className="tech-value">{fullDetails?.budget && fullDetails.budget > 0 ? "$" + Number(fullDetails.budget).toLocaleString() : "N/A"}</span>
                 </div>
                 <div className="tech-item">
                   <span className="tech-label">Revenue</span>
-                  <span className="tech-value">${fullDetails?.revenue?.toLocaleString() || "N/A"}</span>
+                  <span className="tech-value">{fullDetails?.revenue && fullDetails.revenue > 0 ? "$" + Number(fullDetails.revenue).toLocaleString() : "N/A"}</span>
                 </div>
               </>
             )}
             <div className="tech-item">
               <span className="tech-label">Runtime</span>
-              <span className="tech-value">{fullDetails?.runtime || fullDetails?.episode_run_time?.[0] || "N/A"}m</span>
+              <span className="tech-value">
+                {fullDetails?.runtime
+                  ? String(fullDetails.runtime) + "m"
+                  : fullDetails?.episode_run_time?.[0]
+                  ? String(fullDetails.episode_run_time[0]) + "m"
+                  : isTV && episodes[0]?.runtime
+                  ? String(episodes[0].runtime) + "m"
+                  : isTV && fullDetails?.number_of_seasons
+                  ? String(fullDetails.number_of_seasons) + (fullDetails.number_of_seasons > 1 ? " Seasons" : " Season")
+                  : "N/A"}
+              </span>
             </div>
           </div>
 
@@ -683,21 +1134,61 @@ function MovieModal({ movie, onClose }) {
               <div className="related-loading">Loading...</div>
             ) : (
               <div className="related-grid">
-                {similarContent.map((item) => (
-                  <div key={item.id} className="related-card" onClick={() => { setCurrentMovie(item); setIsPlaying(false); setEpisodes([]); setSelectedSeason(1); setSelectedEpisode(1); document.querySelector('.modal-overlay').scrollTo({ top: 0, behavior: 'smooth' }); }}>
-                    <div className="related-poster-wrap">
-                      <img src={`https://image.tmdb.org/t/p/w342${item.poster_path}`} alt={item.title || item.name} className="related-poster" />
-                      <div className="related-hover"><svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40"><path d="M8 5v14l11-7z" /></svg></div>
-                    </div>
-                    <div className="related-info">
-                      <h4 className="related-name">{item.title || item.name}</h4>
-                      <div className="related-meta">
-                        <span className="related-year">{(item.release_date || item.first_air_date)?.split("-")[0]}</span>
-                        <span className="related-rating">{Math.round((item.vote_average || 0) * 10)}% Match</span>
+                {similarContent.map((item) => {
+                  const posterUrl = item.poster_path
+                    ? `https://image.tmdb.org/t/p/w342${item.poster_path}`
+                    : item.backdrop_path
+                    ? `https://image.tmdb.org/t/p/w300${item.backdrop_path}`
+                    : null;
+                  const itemTitle = item.title || item.name || "Untitled";
+                  const itemYear = (item.release_date || item.first_air_date)?.split("-")[0] || "";
+                  const itemRating = Math.round((item.vote_average || 0) * 10);
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="related-card"
+                      onClick={() => {
+                        setCurrentMovie(item);
+                        setIsPlaying(false);
+                        setEpisodes([]);
+                        setSelectedSeason(1);
+                        setSelectedEpisode(1);
+                        modalOverlayRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                    >
+                      <div className="related-poster-wrap">
+                        {posterUrl ? (
+                          <img
+                            src={posterUrl}
+                            alt={itemTitle}
+                            className="related-poster"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div className="related-poster-fallback">
+                            <span>{itemTitle}</span>
+                          </div>
+                        )}
+                        <div className="related-hover">
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="related-info">
+                        <h4 className="related-name" title={itemTitle}>{itemTitle}</h4>
+                        <div className="related-meta">
+                          <span className="related-year">{itemYear}</span>
+                          <span className="related-rating">{itemRating}% Match</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -709,4 +1200,3 @@ function MovieModal({ movie, onClose }) {
 }
 
 export default MovieModal;
-

@@ -17,7 +17,7 @@
 
 .awards-icon-wrap {
     margin-bottom: 2rem;
-    filter: drop-shadow(0 0 20px rgba(255, 114, 0, 0.4));
+    filter: none;
 }
 
 .awards-title-premium {
@@ -110,7 +110,7 @@
     border-top: 4px solid #ff7200;
     border-radius: 50%;
     animation: goldSpin 1s linear infinite;
-    box-shadow: 0 0 20px rgba(255, 114, 0, 0.2);
+    box-shadow: none;
 }
 
 @keyframes goldSpin {

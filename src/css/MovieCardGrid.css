@@ -25,9 +25,7 @@
   border-radius: 8px;
 }
 
-.variant-grid .grid-meta-content {
-  display: block;
-}
+.variant-grid .grid-meta-content { display: none !important; }
 
 .variant-grid .netflix-hover-content {
   display: none !important;

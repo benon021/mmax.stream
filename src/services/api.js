@@ -124,7 +124,7 @@ export const getUpcomingMovies = async () => {
 
 export const getMovieDetails = async (id, type = "movie") => {
   const res = await fetch(
-    `${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,release_dates,content_ratings,credits,reviews,external_ids,recommendations&language=en-US`
+    `${BASE_URL}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,release_dates,content_ratings,credits,reviews,external_ids,recommendations,images&include_image_language=en,null&language=en-US`
   );
   return res.json();
 };

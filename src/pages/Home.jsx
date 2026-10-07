@@ -45,21 +45,12 @@ const continueWatchingTabs = [
 function Home() {
   const navigate = useNavigate();
   const [searchResults, setSearchResults] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search");
+  const isSearchPage = Boolean(searchQuery);
+  const [lastQuery, setLastQuery] = useState(searchQuery || "");
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState(null);
-  const [lastQuery, setLastQuery] = useState("");
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [activeSection, setActiveSection] = useState("Trending");
-  const isSearchPage = Boolean(searchParams.get("search"));
-
-  const sections = [
-    { id: "Continue Watching", label: "Continue Watching" },
-    { id: "Trending", label: "Trending" },
-    { id: "What's Popular", label: "What's Popular" },
-    { id: "Free To Watch", label: "Free To Watch" },
-    { id: "Top Rated", label: "Top Rated" },
-  ];
-
   const handleSearch = useCallback(async (query) => {
     if (!query) {
       setSearchResults(null);
@@ -153,38 +144,16 @@ function Home() {
       {/* Sections (hidden during search) */}
       {!isSearchPage && (
         <>
-          <div className="top-sections-tabs">
-            {sections.map((section) => (
-              <button
-                key={section.id}
-                className={`section-tab-btn ${activeSection === section.id ? "active" : ""}`}
-                onClick={() => setActiveSection(section.id)}
-              >
-                {section.label}
-              </button>
-            ))}
-          </div>
-
           <div className="section-content">
-            {activeSection === "Continue Watching" && (
-              <MovieRow title="Continue Watching" tabs={continueWatchingTabs} layout="grid" />
-            )}
-            {activeSection === "Trending" && (
-              <MovieRow title="Trending" tabs={trendingTabs} layout="grid" />
-            )}
-            {activeSection === "What's Popular" && (
-              <MovieRow title="What's Popular" tabs={popularTabs} layout="grid" />
-            )}
-            {activeSection === "Free To Watch" && (
-              <MovieRow title="Free To Watch" tabs={freeTabs} layout="grid" />
-            )}
-            {activeSection === "Top Rated" && (
-              <MovieRow
-                title="Top Rated"
-                tabs={[{ label: "Movies", fetchFn: getTopRatedMovies }]}
-                layout="grid"
-              />
-            )}
+            <MovieRow title="Continue Watching" tabs={continueWatchingTabs} layout="grid" />
+            <MovieRow title="Trending" tabs={trendingTabs} layout="grid" />
+            <MovieRow title="What's Popular" tabs={popularTabs} layout="grid" />
+            <MovieRow title="Free To Watch" tabs={freeTabs} layout="grid" />
+            <MovieRow
+              title="Top Rated"
+              tabs={[{ label: "Movies", fetchFn: getTopRatedMovies }]}
+              layout="grid"
+            />
           </div>
         </>
       )}

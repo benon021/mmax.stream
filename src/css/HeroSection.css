@@ -2,10 +2,10 @@
 .hero {
   position: relative;
   width: 100%;
-  height: 85vh;
-  min-height: 600px;
-  max-height: 900px;
-  background-color: #000;
+  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
+  background-color: transparent;
   display: flex;
   align-items: center;
   overflow: hidden;
@@ -15,10 +15,7 @@
 
 .hero-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 1;
 }
 
@@ -65,23 +62,11 @@
 }
 
 .hero-vignette-bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 300px;
-  background: linear-gradient(to top, #0d0d0d 0%, rgba(13, 13, 13, 0.8) 30%, transparent 100%);
-  z-index: 2;
+  display: none;
 }
 
 .hero-vignette-top {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
-  z-index: 2;
+  display: none;
 }
 
 .hero-content {
@@ -91,6 +76,15 @@
   max-width: 800px;
   padding: 0 4rem;
   margin-top: 15vh;
+}
+
+.home-hero .hero-content {
+  position: absolute;
+  left: 0;
+  bottom: 12%;
+  width: 60%;
+  margin: 0;
+  text-align: left;
 }
 
 .hero-click-overlay {
@@ -371,10 +365,11 @@
   }
 
   .hero {
-    height: 100vh;
-    min-height: -webkit-fill-available; /* Support for iOS address bar */
-    min-height: 450px;
-    margin-top: calc(var(--nav-height) * -1);
+    height: 92vh;
+    height: 92dvh;
+    min-height: 520px;
+    margin-top: calc(var(--nav-height, 60px) * -1);
+    align-items: flex-end;
   }
 
   .hero-background,
@@ -384,81 +379,168 @@
 
   .hero-image {
     height: 100%;
-    object-position: center;
+    object-position: center 25%;
   }
 
   .hero-content {
     width: 100%;
-    padding: 0 1.5rem;
+    padding: 4rem 1.25rem 2rem;
     position: absolute;
-    bottom: 12%;
-    margin-top: 0;
-    align-self: flex-end;
-    margin-bottom: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
     text-align: center;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 60%, transparent 100%);
-    padding-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.98) 0%,
+      rgba(0, 0, 0, 0.85) 45%,
+      rgba(0, 0, 0, 0.35) 75%,
+      transparent 100%
+    );
+    z-index: 5;
+  }
+
+  .home-hero .hero-content {
+    width: 100%;
+    padding: 4rem 1.25rem 2rem;
+    bottom: 0;
+    text-align: center;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.98) 0%,
+      rgba(0, 0, 0, 0.85) 45%,
+      rgba(0, 0, 0, 0.35) 75%,
+      transparent 100%
+    );
   }
 
   .hero-series-type {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    margin-bottom: 0.25rem;
-    font-size: 0.58rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.62rem;
     letter-spacing: 2px;
   }
 
   .brand-logo-small {
-    width: 28px;
-    height: 28px;
-    font-size: 1.25rem;
+    width: 24px;
+    height: 24px;
+    font-size: 1.1rem;
   }
 
   .hero-series-type .series-text {
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     letter-spacing: -0.04em;
   }
 
   .hero-title {
-    font-size: clamp(1.35rem, 7vw, 1.9rem);
-    margin-bottom: 0.75rem;
+    font-size: clamp(1.75rem, 7.5vw, 2.5rem);
+    font-weight: 900;
+    margin: 0 0 0.5rem;
     text-transform: none;
-    letter-spacing: 0;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+    max-width: 95%;
   }
 
   .hero-synopsis {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.85);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    margin: 0 auto 1rem;
-    width: min(90%, 34rem);
-    opacity: 0.8;
+    margin: 0 auto 1.25rem;
+    width: min(92%, 36rem);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+    opacity: 1;
+  }
+
+  .home-hero .hero-synopsis {
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .hero-actions {
+    display: flex;
     justify-content: center;
+    align-items: center;
     gap: 0.75rem;
-    flex-wrap: wrap;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    flex-wrap: nowrap;
+  }
+
+  .home-hero .hero-actions {
+    justify-content: center;
   }
 
   .hero-btn {
-    width: 45%;
-    min-height: 38px;
-    padding: 0.45rem 0.6rem;
-    font-size: 0.75rem;
-    border-radius: 6px;
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+  }
+
+  .hero-btn svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
   }
 
   .hero-right-controls {
-    bottom: 45%;
-    right: 1.5rem;
+    position: absolute;
+    top: calc(var(--navbar-height, 60px) + 1.2rem);
+    bottom: auto;
+    right: 1rem;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mute-btn {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: white;
+  }
+
+  .maturity-badge-hero {
+    padding: 0.25rem 0.8rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-left: 3px solid #ff7200;
+    border-radius: 0 4px 4px 0;
   }
 
   .hero-dots {
     right: 1rem;
-    bottom: 40%;
+    bottom: 1.25rem;
     max-width: 45vw;
   }
 
@@ -466,9 +548,272 @@
     width: 6px;
     height: 6px;
   }
+}
 
-  .maturity-badge-hero {
-    padding: 0.25rem 1.5rem 0.25rem 0.75rem;
-    font-size: 0.9rem;
-  }
+/* ── Netflix Scrims ─────────────────────────────────── */
+.hero-netflix-scrim-left {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: linear-gradient(
+    to right,
+    rgba(13, 13, 13, 0.6) 0%,
+    rgba(13, 13, 13, 0.3) 35%,
+    rgba(13, 13, 13, 0.05) 65%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.hero-netflix-scrim-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 120px;
+  z-index: 2;
+  background: linear-gradient(to top, #0d0d0d 0%, rgba(13, 13, 13, 0.35) 45%, transparent 100%);
+  pointer-events: none;
+}
+
+.hero-netflix-scrim-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 80px;
+  z-index: 2;
+  background: linear-gradient(to bottom, rgba(13, 13, 13, 0.35) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+/* ── Netflix Red Brand Kicker (Image 1 Wednesday) ───── */
+.hero-kicker-netflix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+.hero-kicker-n {
+  color: #e50914;
+  font-family: "Impact", "Bebas Neue", "Montserrat", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero-kicker-series {
+  color: #e50914;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+
+/* ── Title Area & Official Title Logo ────────────────── */
+.hero-title-area {
+  display: flex;
+  align-items: flex-end;
+  min-height: 80px;
+  max-width: 100%;
+  margin-bottom: 0.75rem;
+}
+
+.hero-title-logo {
+  max-width: 440px;
+  max-height: 150px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 4px 18px rgba(0, 0, 0, 0.9));
+  transition: transform 0.3s ease;
+}
+
+.hero-title-logo:hover {
+  transform: scale(1.02);
+}
+
+/* ── Bullet-Separated Metadata Row (Show • Fantasy • 2022 • TV-14) ── */
+.hero-netflix-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #e2e2e2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  flex-wrap: wrap;
+}
+
+.hero-meta-item {
+  color: #ffffff;
+}
+
+.hero-meta-bullet {
+  color: #888888;
+  font-size: 0.75rem;
+}
+
+.hero-maturity-badge {
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f0f0f0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ── Netflix Buttons ────────────────────────────────── */
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.hero-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 0.65rem 1.75rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-btn.play {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+.hero-btn.play:hover {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  transform: translateY(-2px);
+}
+
+.hero-btn.more-info {
+  background-color: rgba(109, 109, 110, 0.7) !important;
+  color: #ffffff !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.hero-btn.more-info:hover {
+  background-color: rgba(109, 109, 110, 0.45) !important;
+  transform: translateY(-2px);
+}
+
+/* ── Bottom Right Corner Pill Badge ─────────────────── */
+.hero-netflix-pill-badge {
+  background: rgba(20, 20, 20, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+/* ── MMAX Brand Kicker ────────────────────────────── */
+.hero-kicker-mmax {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.65rem;
+  user-select: none;
+}
+
+.hero-kicker-mmax-logo {
+  height: 24px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.85));
+}
+
+.hero-kicker-mmax-badge {
+  font-family: "Impact", "Bebas Neue", "Montserrat", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: #ff7200;
+  text-transform: uppercase;
+  background: rgba(255, 114, 0, 0.12);
+  border: 1px solid rgba(255, 114, 0, 0.35);
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+
+/* ── Hide Hero Dots (Clean Netflix Billboard) ── */
+.hero-dots {
+  display: none !important;
+}
+
+/* ── Unified Hero Video & Fallback Layout ── */
+.hero-video-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.player-frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100vw;
+  height: 56.25vw;
+  min-height: 100vh;
+  min-width: 177.77vh;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.hero-video-container.show-p1 #hero-yt-player-1,
+.hero-video-container.show-p2 #hero-yt-player-2,
+.hero-video-container.show-p1 #anime-hero-yt-1,
+.hero-video-container.show-p2 #anime-hero-yt-2 {
+  opacity: 1;
+}
+
+.hero-image.fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* ── Consistent Hero Content Placement across All Pages ── */
+.hero .hero-content,
+.home-hero .hero-content,
+.tv-hero .hero-content,
+.anime-hero .hero-content {
+  position: absolute;
+  left: 0;
+  bottom: 12%;
+  width: 60%;
+  max-width: 800px;
+  padding: 0 clamp(1.5rem, 5vw, 4rem);
+  margin: 0;
+  text-align: left;
+  z-index: 4;
 }

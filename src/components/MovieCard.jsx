@@ -41,7 +41,7 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
   // Robust Metadata Fallbacks
   const title = movie.title || movie.name || movie.original_title || movie.original_name || "Untitled";
   const date = movie.release_date || movie.first_air_date || "";
-  const year = date ? date.split("-")[0] : "Release TBD";
+  const _year = date ? date.split("-")[0] : "Release TBD";
   const mediaType = movie.media_type === "tv" || movie.mediaType === "tv" || movie.name ? "TV" : "Movie";
 
   const imagePath = useMemo(() => {
@@ -179,7 +179,7 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
 
 
 
-  const duration = movie.runtime
+  const _duration = movie.runtime
     ? `${movie.runtime}m`
     : movie.episode_run_time?.[0]
       ? `${movie.episode_run_time[0]}m`
@@ -250,15 +250,7 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
             )}
           </div>
 
-          {/* New: Grid Metadata (Visible on mobile/grids where hover is disabled) */}
-          <div className="grid-meta-content">
-            <h3 className="grid-movie-title">{title}</h3>
-            <div className="grid-movie-info">
-              {year && <span>{year}</span>}
-              <span className="dot">•</span>
-              {duration && <span>{duration}</span>}
-            </div>
-          </div>
+          
         </div>
       </div>
 
@@ -341,7 +333,7 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
               <div className="popover-episodes-section">
                 <div className="popover-episodes-label">Episodes (Season {(localProgress && localProgress.season) || 1}):</div>
                 <div className="popover-episode-list">
-                  {episodes.map(ep => (
+                  {episodes.slice(0, 25).map(ep => (
                     <button 
                       key={ep.id}
                       className="popover-episode-btn"
@@ -350,6 +342,15 @@ function MovieCard({ movie, onSelect, variant = "row" }) {
                       {ep.episode_number}
                     </button>
                   ))}
+                  {episodes.length > 25 && (
+                    <button 
+                      className="popover-episode-btn popover-more-btn"
+                      onClick={(e) => { e.stopPropagation(); handleCardClick(); }}
+                      title="View all episodes in details"
+                    >
+                      +{episodes.length - 25}
+                    </button>
+                  )}
                 </div>
               </div>
             )}
