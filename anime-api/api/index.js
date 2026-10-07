@@ -42700,7 +42700,7 @@ var __webpack_exports__ = {};
 
 // EXPORTS
 __nccwpck_require__.d(__webpack_exports__, {
-  A: () => (/* binding */ api)
+  A: () => (/* binding */ serverless)
 });
 
 // NAMESPACE OBJECT: ./node_modules/domutils/lib/esm/index.js
@@ -67661,7 +67661,7 @@ router.get('/news', utils_handler(news_controller));
 router.get('/random', utils_handler(random_controller));
 /* harmony default export */ const routes = (router);
 
-;// CONCATENATED MODULE: ./api/index.ts
+;// CONCATENATED MODULE: ./src/serverless.ts
 
 
 
@@ -67673,7 +67673,7 @@ router.get('/random', utils_handler(random_controller));
 const app = new hono_Hono();
 // CORS Configuration
 const origins = config_config.origin.includes(',')
-    ? config_config.origin.split(',').map(o => o.trim())
+    ? config_config.origin.split(',').map((o) => o.trim())
     : config_config.origin === '*'
         ? '*'
         : [config_config.origin];
@@ -67710,7 +67710,7 @@ app.onError((err, c) => {
 app.notFound((c) => {
     return fail(c, 'Route not found', 404);
 });
-/* harmony default export */ const api = (getRequestListener(app.fetch));
+/* harmony default export */ const serverless = (getRequestListener(app.fetch));
 
 var __webpack_exports__default = __webpack_exports__.A;
 export { __webpack_exports__default as default };

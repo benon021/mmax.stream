@@ -2,16 +2,16 @@ import { Hono } from 'hono';
 import { getRequestListener } from '@hono/node-server';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import hiAnimeRoutes from '../src/routes/routes';
-import config from '../src/config/config';
-import { AppError } from '../src/utils/errors';
-import { fail } from '../src/utils/response';
+import hiAnimeRoutes from './routes/routes';
+import config from './config/config';
+import { AppError } from './utils/errors';
+import { fail } from './utils/response';
 
 const app = new Hono();
 
 // CORS Configuration
 const origins = config.origin.includes(',')
-  ? config.origin.split(',').map(o => o.trim())
+  ? config.origin.split(',').map((o) => o.trim())
   : config.origin === '*'
     ? '*'
     : [config.origin];
