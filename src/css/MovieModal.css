@@ -3102,3 +3102,188 @@
 .shield-toggle-btn svg {
   color: currentColor;
 }
+
+/* ==========================================================================
+   Community End Credits & Intro Timestamps (TheIntroDB & AniSkip)
+   ========================================================================== */
+.credits-prompt-card {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  z-index: 95;
+  width: calc(100% - 48px);
+  max-width: 320px;
+  background: rgba(14, 14, 20, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(162, 155, 254, 0.38);
+  border-radius: 14px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85), 0 0 25px rgba(108, 92, 231, 0.28);
+  animation: creditsPromptSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+}
+
+@keyframes creditsPromptSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.credits-prompt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.credits-prompt-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: #a29bfe;
+  text-transform: uppercase;
+}
+
+.credits-prompt-dismiss {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.credits-prompt-dismiss:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.credits-prompt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.credits-prompt-text {
+  font-size: 0.86rem;
+  color: rgba(240, 240, 255, 0.9);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.credits-prompt-text strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+.credits-prompt-next-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: linear-gradient(135deg, #6c5ce7 0%, #5844d8 100%);
+  color: #ffffff;
+  border: 1px solid rgba(162, 155, 254, 0.45);
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.4);
+}
+
+.credits-prompt-next-btn:hover {
+  background: linear-gradient(135deg, #7d6ef0 0%, #6854ec 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.55);
+}
+
+.credits-prompt-dismiss-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.55rem 0.9rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.credits-prompt-dismiss-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+}
+
+/* Metadata Badges for Intro & Credits */
+.modal-meta-credits-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(108, 92, 231, 0.16);
+  border: 1px solid rgba(162, 155, 254, 0.4);
+  color: #dcd7fe;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(108, 92, 231, 0.15);
+}
+
+.modal-meta-intro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(255, 159, 26, 0.14);
+  border: 1px solid rgba(255, 159, 26, 0.4);
+  color: #fed97a;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(255, 159, 26, 0.15);
+}
+
+/* Quick action button in player now-watching bar */
+.credits-quick-btn {
+  background: rgba(108, 92, 231, 0.14) !important;
+  border-color: rgba(162, 155, 254, 0.4) !important;
+  color: #dfdbff !important;
+  transition: all 0.25s ease !important;
+}
+
+.credits-quick-btn:hover,
+.credits-quick-btn.active {
+  background: rgba(108, 92, 231, 0.3) !important;
+  border-color: rgba(162, 155, 254, 0.6) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(108, 92, 231, 0.35) !important;
+}
+
+@media (max-width: 640px) {
+  .credits-prompt-card {
+    right: 12px;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+    padding: 0.85rem;
+  }
+}

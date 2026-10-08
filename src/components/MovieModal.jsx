@@ -5,6 +5,7 @@ import "../css/MovieModal.css";
 import { getSeasonDetails, getMovieDetails, getSimilarContent } from "../services/api";
 import { getProgress, saveProgress } from "../services/progress";
 import { searchAnimeHiAnime, getHiAnimeEpisodes, getAnimeEmbedUrl, findBestAnimeMatch } from "../services/animeApi";
+import { getMediaTimestamps } from "../services/timestampsApi";
 
 const IMG_BASE_BACKDROP = "https://image.tmdb.org/t/p/original";
 const EPISODES_PER_BATCH = 25;
@@ -97,6 +98,8 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   const [animeAudio, setAnimeAudio] = useState("dub"); // "dub" | "sub" (unified audio preference)
   const [hiAnimeEpisodes, setHiAnimeEpisodes] = useState([]);
   const [isAdShieldActive, setIsAdShieldActive] = useState(true);
+  const [mediaTimestamps, setMediaTimestamps] = useState(null);
+  const [showCreditsPrompt, setShowCreditsPrompt] = useState(false);
   
   const handleAudioChange = (newAudio) => {
     setAnimeAudio(newAudio);
@@ -137,6 +140,60 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isPlaying]);
+
+  // Fetch verified Intro and End Credits timestamps from TheIntroDB and AniSkip
+  useEffect(() => {
+    if (!currentMovie?.id) return;
+    let cancelled = false;
+
+    const activeAnimeEp = isAnime
+      ? hiAnimeEpisodes.find((item) => item.episodeNumber === selectedEpisode) || hiAnimeEpisodes[selectedEpisode - 1]
+      : null;
+
+    setMediaTimestamps(null);
+    setShowCreditsPrompt(false);
+
+    getMediaTimestamps({
+      tmdbId: currentMovie.id,
+      isTV,
+      season: selectedSeason,
+      episode: selectedEpisode,
+      malId: activeAnimeEp?.malId,
+      isAnime,
+    }).then((data) => {
+      if (cancelled) return;
+      if (data) {
+        setMediaTimestamps(data);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentMovie?.id, isTV, selectedSeason, selectedEpisode, isAnime, hiAnimeEpisodes]);
+
+  // Listen for timeupdate events from embed player iframes (e.g. VidLink postMessage)
+  useEffect(() => {
+    if (!isPlaying || !mediaTimestamps?.credits?.start) return;
+
+    const handleMessage = (event) => {
+      try {
+        let payload = event.data;
+        if (typeof payload === "string") {
+          payload = JSON.parse(payload);
+        }
+        const time = payload?.currentTime || payload?.data?.currentTime || payload?.time;
+        if (typeof time === "number" && time >= mediaTimestamps.credits.start) {
+          setShowCreditsPrompt(true);
+        }
+      } catch {
+        // Not a JSON message or unrelated event
+      }
+    };
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [isPlaying, mediaTimestamps]);
 
   // Reset trailer states when movie changes
   useEffect(() => {
@@ -573,6 +630,12 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     return getUrlFn(currentMovie.id, isTV, selectedSeason, selectedEpisode);
   }, [isAnime, currentSource, hiAnimeEpisodes, selectedEpisode, selectedSeason, animeAudio, currentMovie.id, isTV]);
 
+  const hasNextEpisode = isAnime
+    ? selectedEpisode < (hiAnimeEpisodes?.length || 0)
+    : isTV
+      ? selectedEpisode < (episodes?.length || 0)
+      : false;
+
   return createPortal(
     <div
       className={`modal-overlay  ${isFullscreen ? "is-fullscreen" : ""}`}
@@ -669,6 +732,51 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     </svg>
                   </button>
                 )}
+
+                {/* Community-Verified End Credits & Skip to Next Episode Card */}
+                {showCreditsPrompt && mediaTimestamps?.credits && (
+                  <div className="credits-prompt-card" role="alert">
+                    <div className="credits-prompt-header">
+                      <span className="credits-prompt-kicker">🎬 END CREDITS • {mediaTimestamps.source}</span>
+                      <button 
+                        type="button" 
+                        className="credits-prompt-dismiss" 
+                        onClick={() => setShowCreditsPrompt(false)}
+                        aria-label="Dismiss credits prompt"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className="credits-prompt-body">
+                      <p className="credits-prompt-text">
+                        Credits roll at <strong>{mediaTimestamps.credits.formattedStart}</strong>.
+                      </p>
+                      {hasNextEpisode ? (
+                        <button
+                          type="button"
+                          className="credits-prompt-next-btn"
+                          onClick={() => {
+                            setShowCreditsPrompt(false);
+                            handleEpisodeSelect(selectedEpisode + 1);
+                          }}
+                        >
+                          <span>Next Episode (E{selectedEpisode + 1})</span>
+                          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                          </svg>
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          className="credits-prompt-dismiss-btn"
+                          onClick={() => setShowCreditsPrompt(false)}
+                        >
+                          ✓ Continue Watching Credits
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -681,6 +789,16 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   <span className="modal-maturity-dynamic">{getRating()}</span>
                   <span className="modal-quality">4K Ultra HD</span>
                   {isTV && <span className="modal-duration">S{selectedSeason}:E{selectedEpisode}</span>}
+                  {mediaTimestamps?.credits && (
+                    <span className="modal-meta-credits-pill" title={`Verified End Credits timestamp (${mediaTimestamps.source})`}>
+                      🎬 Credits: {mediaTimestamps.credits.formattedStart}
+                    </span>
+                  )}
+                  {mediaTimestamps?.intro && (
+                    <span className="modal-meta-intro-pill" title={`Verified Intro timestamp (${mediaTimestamps.source})`}>
+                      ⚡ Intro: {mediaTimestamps.intro.formattedStart}
+                    </span>
+                  )}
                 </div>
               </div>
               <div className="player-now-watching-actions">
@@ -771,6 +889,22 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   </svg>
                   <span>{isAdShieldActive ? "Shield Active" : "Shield"}</span>
                 </button>
+                {mediaTimestamps?.credits && (
+                  <button 
+                    type="button"
+                    className={`modal-btn secondary credits-quick-btn ${showCreditsPrompt ? "active" : ""}`}
+                    onClick={() => {
+                      if (hasNextEpisode) {
+                        handleEpisodeSelect(selectedEpisode + 1);
+                      } else {
+                        setShowCreditsPrompt((prev) => !prev);
+                      }
+                    }}
+                    title={`End credits begin at ${mediaTimestamps.credits.formattedStart} (${mediaTimestamps.source})`}
+                  >
+                    <span>{hasNextEpisode ? `⏭️ Next Ep (${mediaTimestamps.credits.formattedStart})` : `🎬 Credits (${mediaTimestamps.credits.formattedStart})`}</span>
+                  </button>
+                )}
                 <button 
                   className={`modal-btn secondary fav-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
                   onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}
@@ -835,6 +969,16 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                       ? `${fullDetails.number_of_seasons} Season${fullDetails.number_of_seasons > 1 ? 's' : ''}`
                       : `${Math.floor(fullDetails.runtime / 60)}h ${fullDetails.runtime % 60}m`
                     }
+                  </span>
+                )}
+                {mediaTimestamps?.credits && (
+                  <span className="modal-meta-credits-pill" title={`Verified End Credits timestamp (${mediaTimestamps.source})`}>
+                    🎬 Credits: {mediaTimestamps.credits.formattedStart}
+                  </span>
+                )}
+                {mediaTimestamps?.intro && (
+                  <span className="modal-meta-intro-pill" title={`Verified Intro timestamp (${mediaTimestamps.source})`}>
+                    ⚡ Intro: {mediaTimestamps.intro.formattedStart}
                   </span>
                 )}
               </div>
