@@ -1,33 +1,48 @@
-// Service connecting MMAX to local HiAnime API (or custom hosted Vercel instance)
-const PRIMARY_HIANIME_URL = import.meta.env.VITE_ANIME_API_URL || "/api/v2";
-const FALLBACK_HIANIME_URL = "http://localhost:5000/api/v2";
+// Service connecting MMAX to HiAnime API (Live Vercel backend with automatic fallbacks)
+const PROD_ANIME_API = "https://mmax-anime-api.vercel.app/api/v2";
+const PRIMARY_HIANIME_URL = import.meta.env.VITE_ANIME_API_URL || PROD_ANIME_API;
 
 const searchCache = new Map();
 const episodesCache = new Map();
 
 /**
- * Perform search request with proxy and direct localhost fallback
+ * Perform search request with prioritized endpoint fallbacks
  */
-async function fetchFromApi(endpoint, timeoutMs = 4000) {
-  // Try proxy first (/api/v2/...), then fallback to direct localhost:5000
-  try {
-    const res = await fetch(`${PRIMARY_HIANIME_URL}${endpoint}`, {
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (res.ok) return await res.json();
-  } catch {
-    // Attempt fallback directly to port 5000
+async function fetchFromApi(endpoint, timeoutMs = 5000) {
+  const isLocalDev =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
+
+  // Endpoint order:
+  // 1. PRIMARY_HIANIME_URL (defaults to live Vercel backend https://mmax-anime-api.vercel.app/api/v2)
+  // 2. /api/v2 (proxied via vercel.json rewrite or vite dev server)
+  // 3. Fallback direct to PROD_ANIME_API if PRIMARY was different
+  // 4. http://localhost:5000/api/v2 ONLY when in local development
+  const candidates = [
+    PRIMARY_HIANIME_URL,
+    "/api/v2",
+    PROD_ANIME_API,
+    isLocalDev ? "http://localhost:5000/api/v2" : null,
+  ].filter((url, index, self) => url && self.indexOf(url) === index);
+
+  for (const baseUrl of candidates) {
+    try {
+      const res = await fetch(`${baseUrl}${endpoint}`, {
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (res.ok) {
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          return await res.json();
+        }
+      }
+    } catch {
+      // Continue to next available endpoint
+    }
   }
 
-  try {
-    const res = await fetch(`${FALLBACK_HIANIME_URL}${endpoint}`, {
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (res.ok) return await res.json();
-  } catch (err) {
-    console.warn(`[AnimeAPI] Endpoint ${endpoint} unreachable:`, err.message);
-  }
-
+  console.warn(`[AnimeAPI] Endpoint ${endpoint} unreachable across all sources.`);
   return null;
 }
 
