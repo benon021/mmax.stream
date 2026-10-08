@@ -1,3 +1,5 @@
+import { getCachedAnime, setCachedAnime, getCachedEpisodes, setCachedEpisodes } from "./supabase";
+
 // Service connecting MMAX to HiAnime API (Live Vercel backend with automatic fallbacks)
 const PROD_ANIME_API = "https://mmax-anime-api.vercel.app/api/v2";
 const PRIMARY_HIANIME_URL = import.meta.env.VITE_ANIME_API_URL || PROD_ANIME_API;
@@ -101,10 +103,18 @@ export async function searchAnimeHiAnime(title, season = 1) {
     const cacheKey = clean.toLowerCase();
     if (searchCache.has(cacheKey)) return searchCache.get(cacheKey);
 
+    // Try Supabase database cache for instant loading
+    const cloudCached = await getCachedAnime(clean);
+    if (cloudCached && cloudCached.length > 0) {
+      searchCache.set(cacheKey, cloudCached);
+      return cloudCached;
+    }
+
     const json = await fetchFromApi(`/search?keyword=${encodeURIComponent(clean)}`, 3500);
     const results = json?.data?.response || [];
     if (results.length > 0) {
       searchCache.set(cacheKey, results);
+      setCachedAnime(clean, results);
     }
     return results;
   };
@@ -129,10 +139,18 @@ export async function getHiAnimeEpisodes(animeId) {
   if (!animeId) return [];
   if (episodesCache.has(animeId)) return episodesCache.get(animeId);
 
+  // Try Supabase database cache for instant loading
+  const cloudCached = await getCachedEpisodes(animeId);
+  if (cloudCached && cloudCached.length > 0) {
+    episodesCache.set(animeId, cloudCached);
+    return cloudCached;
+  }
+
   const json = await fetchFromApi(`/episodes/${encodeURIComponent(animeId)}`, 4500);
   const list = json?.data || [];
   if (list.length > 0) {
     episodesCache.set(animeId, list);
+    setCachedEpisodes(animeId, list);
   }
   return list;
 }
