@@ -96,6 +96,7 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
   const [isPlayerServerOpen, setIsPlayerServerOpen] = useState(false);
   const [animeAudio, setAnimeAudio] = useState("dub"); // "dub" | "sub" (unified audio preference)
   const [hiAnimeEpisodes, setHiAnimeEpisodes] = useState([]);
+  const [isAdShieldActive, setIsAdShieldActive] = useState(true);
   
   const handleAudioChange = (newAudio) => {
     setAnimeAudio(newAudio);
@@ -116,6 +117,26 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
     return false;
   }, [currentMovie, fullDetails]);
   const mediaType = isTV ? "tv" : "movie";
+
+  // Re-arm ad shield when video source, movie, or episode changes
+  useEffect(() => {
+    setIsAdShieldActive(true);
+  }, [currentSourceIndex, selectedEpisode, selectedSeason, currentMovie.id]);
+
+  // Method 2: Anti-Framebusting - Trap external ad redirects attempting to hijack the main window
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const handleBeforeUnload = (e) => {
+      // Prevents embedded ad scripts from redirecting the parent tab away from MMAX
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isPlaying]);
 
   // Reset trailer states when movie changes
   useEffect(() => {
@@ -617,6 +638,25 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                   ></iframe>
                 )}
 
+                {/* Method 1: Transparent Interceptor Layer (Click Shield) */}
+                {isAdShieldActive && !playTrailerFirst && (
+                  <div
+                    className="player-click-shield"
+                    title="Ad Shield Active: Click to unlock player controls"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsAdShieldActive(false);
+                    }}
+                  >
+                    <div className="click-shield-badge">
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                      </svg>
+                      <span>🛡️ Ad Shield Active • Click to Play</span>
+                    </div>
+                  </div>
+                )}
+
                 {playTrailerFirst && (
                   <button 
                     className="skip-trailer-overlay-btn"
@@ -719,6 +759,18 @@ function MovieModal({ movie, onClose, initialPlaying = false }) {
                     </div>
                   )}
                 </div>
+                <button 
+                  type="button"
+                  className={`modal-btn secondary shield-toggle-btn ${isAdShieldActive ? "shield-active" : ""}`}
+                  onClick={() => setIsAdShieldActive((prev) => !prev)}
+                  title={isAdShieldActive ? "Ad Shield is active (absorbing popup clicks). Click to unlock native player controls" : "Click to arm Ad Shield against popups"}
+                  aria-pressed={isAdShieldActive}
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                  </svg>
+                  <span>{isAdShieldActive ? "Shield Active" : "Shield"}</span>
+                </button>
                 <button 
                   className={`modal-btn secondary fav-btn ${isFavorite(currentMovie.id) ? "active" : ""}`}
                   onClick={() => isFavorite(currentMovie.id) ? removeFromFavorites(currentMovie.id) : addToFavorites(currentMovie)}

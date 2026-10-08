@@ -3036,3 +3036,69 @@
   letter-spacing: 0.05em;
   margin-left: 0.5rem;
 }
+
+/* ── Ad Shield (Anti-Pop-up Click Interceptor) ────────── */
+.player-click-shield {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+.click-shield-badge {
+  background: rgba(14, 14, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(162, 155, 254, 0.35);
+  color: #f1f0ff;
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 20px rgba(108, 92, 231, 0.25);
+  pointer-events: none;
+  animation: shieldBadgePulse 2.5s infinite ease-in-out;
+  letter-spacing: 0.02em;
+}
+
+.click-shield-badge svg {
+  color: #a29bfe;
+  flex-shrink: 0;
+}
+
+@keyframes shieldBadgePulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 20px rgba(108, 92, 231, 0.25);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85), 0 0 28px rgba(108, 92, 231, 0.45);
+  }
+}
+
+.shield-toggle-btn {
+  transition: all 0.25s ease;
+}
+
+.shield-toggle-btn.shield-active {
+  background: rgba(108, 92, 231, 0.18) !important;
+  border-color: rgba(162, 155, 254, 0.55) !important;
+  color: #a29bfe !important;
+  box-shadow: 0 0 14px rgba(108, 92, 231, 0.25);
+}
+
+.shield-toggle-btn svg {
+  color: currentColor;
+}
